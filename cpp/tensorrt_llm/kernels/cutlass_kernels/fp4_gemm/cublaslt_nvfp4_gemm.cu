@@ -67,7 +67,7 @@ public:
             static_cast<const __nv_fp4_e2m1*>(A), k, 
             static_cast<const __nv_fp8_e4m3*>(weight_sf),
             static_cast<const __nv_fp4_e2m1*>(B), k, 0.0f,
-            nullptr, static_cast<T*>(D), n, nullptr, nullptr, nullptr,
+            nullptr, static_cast<T*>(D), n, nullptr, nullptr, nullptr, nullptr,
             workspace, workspaceBytes, stream);
     }
 

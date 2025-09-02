@@ -328,7 +328,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::dispatchToArch(T* D, void const* A,
     tkc::CutlassGemmConfig gemmConfig, char* workspace, const size_t workspaceBytes, cudaStream_t stream,
     int* occupancy)
 {
-    if constexpr (fp4GemmType == FP4GemmType::W4A8_MXFP4_MXFP8)
+    if constexpr (fp4GemmType == fp4_gemm::FP4GemmType::W4A8_MXFP4_MXFP8)
     {
         if (mSm == 100)
         {
@@ -341,7 +341,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::dispatchToArch(T* D, void const* A,
                 "[TensorRT-LLM Error][CutlassFp4GemmRunner][GEMM Dispatch] Arch unsupported for CUTLASS FP4 GEMM");
         }
     }
-    else if constexpr (fp4GemmType == FP4GemmType::W4A4_NVFP4_NVFP4)
+    else if constexpr (fp4GemmType == fp4_gemm::FP4GemmType::W4A4_NVFP4_NVFP4)
     {
         if (mSm == 100)
         {
@@ -406,7 +406,7 @@ std::vector<tkc::CutlassGemmConfig> CutlassFp4GemmRunner<T, fp4GemmType>::getCon
         {
             for (auto const& cluster_config : clusterShapes)
             {
-                if constexpr (fp4GemmType == FP4GemmType::W4A8_MXFP4_MXFP8)
+                if constexpr (fp4GemmType == fp4_gemm::FP4GemmType::W4A8_MXFP4_MXFP8)
                 {
                     // Skip for high smem usage.
                     if (cluster_config == tkc::ClusterShape::ClusterShape_1x1x1
