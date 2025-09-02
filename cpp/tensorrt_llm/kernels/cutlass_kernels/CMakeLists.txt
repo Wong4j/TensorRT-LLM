@@ -210,6 +210,15 @@ if(USING_OSS_CUTLASS_FP4_GEMM)
   file(GLOB FP4_SRC_CU "${CMAKE_CURRENT_SOURCE_DIR}/fp4_gemm/*.cu")
   add_library(fp4_gemm_src STATIC ${FP4_SRC_CU})
   set_cuda_architectures(fp4_gemm_src 100f 120f)
+  
+  # 添加 cuBLASLt 支持选项
+  option(ENABLE_CUBLASLT_FP4 "Enable cuBLASLt backend for FP4 GEMM" OFF)
+  if(ENABLE_CUBLASLT_FP4)
+    target_compile_definitions(fp4_gemm_src PRIVATE ENABLE_CUBLASLT_FP4)
+    target_link_libraries(fp4_gemm_src PRIVATE cublasLt)
+    message(STATUS "cuBLASLt FP4 GEMM backend enabled")
+  endif()
+  
   # add_instantiations(fp4_gemm_src ${INSTANTIATION_GENERATION_DIR}/fp4_gemm)
 endif()
 

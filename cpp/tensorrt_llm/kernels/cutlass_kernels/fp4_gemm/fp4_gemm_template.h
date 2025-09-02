@@ -502,6 +502,13 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSize(
     return workspace_size;
 }
 
+template <typename T, FP4GemmType fp4GemmType>
+bool CutlassFp4GemmRunner<T, fp4GemmType>::supportsGemmType(fp4_gemm::FP4GemmType gemmType) const
+{
+    // CUTLASS 后端支持所有 GEMM 类型
+    return true;
+}
+
 } // namespace cutlass_kernels
 } // namespace kernels
 } // namespace tensorrt_llm
