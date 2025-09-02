@@ -15,6 +15,8 @@
  */
 
 #include "../include/fp4_gemm.h"
+#include "tensorrt_llm/common/logger.h"
+#include "cublaslt_nvfp4_gemm.h"
 
 namespace tensorrt_llm
 {
@@ -80,7 +82,7 @@ std::vector<tkc::CutlassGemmConfig> CublasLtFp4GemmRunner<T, gemmType>::getConfi
 }
 
 template <typename T, fp4_gemm::FP4GemmType gemmType>
-bool CublasLtFp4GemmRunner<T, gemmType>::supportsGemmType(fp4_gemm::FP4GemmType gemmType) const
+bool CublasLtFp4GemmRunner<T, gemmType>::supportsGemmType(fp4_gemm::FP4GemmType type) const
 {
     // cuBLASLt 目前仅支持 W4A4_NVFP4_NVFP4
     return gemmType == fp4_gemm::FP4GemmType::W4A4_NVFP4_NVFP4;

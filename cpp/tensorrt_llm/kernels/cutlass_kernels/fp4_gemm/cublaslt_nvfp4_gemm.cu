@@ -22,7 +22,6 @@
 
 #include "tensorrt_llm/common/cudaUtils.h"
 #include "tensorrt_llm/common/logger.h"
-#include "cublaslt_nvfp4_gemm.h"
 
 namespace tensorrt_llm
 {

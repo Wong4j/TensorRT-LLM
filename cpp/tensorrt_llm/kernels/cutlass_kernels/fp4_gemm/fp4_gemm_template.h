@@ -503,7 +503,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSize(
 }
 
 template <typename T, FP4GemmType fp4GemmType>
-bool CutlassFp4GemmRunner<T, fp4GemmType>::supportsGemmType(fp4_gemm::FP4GemmType gemmType) const
+bool CutlassFp4GemmRunner<T, fp4GemmType>::supportsGemmType(fp4_gemm::FP4GemmType type) const
 {
     // CUTLASS 后端支持所有 GEMM 类型
     return true;

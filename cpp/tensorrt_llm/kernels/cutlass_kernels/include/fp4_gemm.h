@@ -111,7 +111,7 @@ using CutlassFp4GemmRunnerInterface = IFp4GemmRunner;
 namespace cutlass_kernels
 {
 
-template <typename T, FP4GemmType gemmType = FP4GemmType::W4A4_NVFP4_NVFP4>
+template <typename T, fp4_gemm::FP4GemmType gemmType = fp4_gemm::FP4GemmType::W4A4_NVFP4_NVFP4>
 class CutlassFp4GemmRunner : public virtual fp4_gemm::IFp4GemmRunner
 {
 public:
@@ -129,7 +129,7 @@ public:
 
     // 实现新的接口方法
     fp4_gemm::FP4GemmBackend getBackendType() const override { return fp4_gemm::FP4GemmBackend::CUTLASS; }
-    bool supportsGemmType(fp4_gemm::FP4GemmType gemmType) const override;
+    bool supportsGemmType(fp4_gemm::FP4GemmType type) const override;
 
 private:
     size_t dispatchToArch(T* D, void const* A, void const* B, void const* input_sf, void const* weight_sf,
@@ -148,10 +148,6 @@ private:
 namespace cublaslt_kernels
 {
 
-#ifdef ENABLE_CUBLASLT_FP4
-#include "cublaslt_nvfp4_gemm.h"
-#endif
-
 // cuBLASLt FP4 GEMM Runner 实现
 template <typename T, fp4_gemm::FP4GemmType gemmType>
 class CublasLtFp4GemmRunner : public fp4_gemm::IFp4GemmRunner
@@ -168,7 +164,7 @@ public:
     size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) override;
     std::vector<tkc::CutlassGemmConfig> getConfigs() const override;
     fp4_gemm::FP4GemmBackend getBackendType() const override { return fp4_gemm::FP4GemmBackend::CUBLASLT; }
-    bool supportsGemmType(fp4_gemm::FP4GemmType gemmType) const override;
+    bool supportsGemmType(fp4_gemm::FP4GemmType type) const override;
 
 private:
     // cuBLASLt 特定的实现

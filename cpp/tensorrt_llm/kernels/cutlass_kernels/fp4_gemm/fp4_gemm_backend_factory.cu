@@ -26,7 +26,7 @@ namespace fp4_gemm
 
 template <typename T>
 std::unique_ptr<IFp4GemmRunner> Fp4GemmBackendFactory::createRunner(
-    FP4GemmType gemmType, 
+    FP4GemmType type, 
     FP4GemmBackend backend)
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
@@ -35,9 +35,9 @@ std::unique_ptr<IFp4GemmRunner> Fp4GemmBackendFactory::createRunner(
     {
     case FP4GemmBackend::CUTLASS:
         TLLM_LOG_DEBUG("Creating CUTLASS FP4 GEMM Runner");
-        if (gemmType == FP4GemmType::W4A4_NVFP4_NVFP4) {
+        if (type == FP4GemmType::W4A4_NVFP4_NVFP4) {
             return std::make_unique<cutlass_kernels::CutlassFp4GemmRunner<T, FP4GemmType::W4A4_NVFP4_NVFP4>>();
-        } else if (gemmType == FP4GemmType::W4A8_MXFP4_MXFP8) {
+        } else if (type == FP4GemmType::W4A8_MXFP4_MXFP8) {
             return std::make_unique<cutlass_kernels::CutlassFp4GemmRunner<T, FP4GemmType::W4A8_MXFP4_MXFP8>>();
         } else {
             throw std::runtime_error("Unsupported GEMM type for CUTLASS backend");
@@ -47,7 +47,7 @@ std::unique_ptr<IFp4GemmRunner> Fp4GemmBackendFactory::createRunner(
     case FP4GemmBackend::CUBLASLT:
         TLLM_LOG_DEBUG("Creating cuBLASLt FP4 GEMM Runner");
 #ifdef ENABLE_CUBLASLT_FP4
-        if (gemmType == FP4GemmType::W4A4_NVFP4_NVFP4) {
+        if (type == FP4GemmType::W4A4_NVFP4_NVFP4) {
             return std::make_unique<cublaslt_kernels::CublasLtFp4GemmRunner<T, FP4GemmType::W4A4_NVFP4_NVFP4>>();
         } else {
             throw std::runtime_error("cuBLASLt backend only supports W4A4_NVFP4_NVFP4 GEMM type");
