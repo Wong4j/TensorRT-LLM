@@ -18,6 +18,7 @@
 
 #include <cuda_runtime_api.h>
 #include <vector>
+#include <memory>
 
 #include "cutlass_extensions/gemm_configs.h"
 #include "tensorrt_llm/common/quantization.h"

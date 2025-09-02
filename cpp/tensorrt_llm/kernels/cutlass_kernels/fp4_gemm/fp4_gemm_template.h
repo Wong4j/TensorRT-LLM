@@ -306,7 +306,7 @@ size_t dispatchMXFP8xMXFP4GemmCTAShapeSm100(T* D, void const* A, void const* B, 
     }
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 CutlassFp4GemmRunner<T, fp4GemmType>::CutlassFp4GemmRunner()
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
@@ -316,13 +316,13 @@ CutlassFp4GemmRunner<T, fp4GemmType>::CutlassFp4GemmRunner()
     tk::check_cuda_error(cudaDeviceGetAttribute(&mMultiProcessorCount, cudaDevAttrMultiProcessorCount, device));
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 CutlassFp4GemmRunner<T, fp4GemmType>::~CutlassFp4GemmRunner()
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 size_t CutlassFp4GemmRunner<T, fp4GemmType>::dispatchToArch(T* D, void const* A, void const* B, void const* input_sf,
     void const* weight_sf, float const* global_sf, int m, int n, int k, int batch_count,
     tkc::CutlassGemmConfig gemmConfig, char* workspace, const size_t workspaceBytes, cudaStream_t stream,
@@ -366,7 +366,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::dispatchToArch(T* D, void const* A,
     }
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 void CutlassFp4GemmRunner<T, fp4GemmType>::gemm(void* D, void const* A, void const* B, void const* input_sf,
     void const* weight_sf, float const* global_sf, int m, int n, int k, int batch_count,
     tkc::CutlassGemmConfig gemmConfig, char* workspace, const size_t workspaceBytes, cudaStream_t stream)
@@ -376,7 +376,7 @@ void CutlassFp4GemmRunner<T, fp4GemmType>::gemm(void* D, void const* A, void con
         m, n, k, batch_count, gemmConfig, workspace, workspaceBytes, stream);
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 std::vector<tkc::CutlassGemmConfig> CutlassFp4GemmRunner<T, fp4GemmType>::getConfigs() const
 {
     using tkc::CutlassTileConfig;
@@ -442,7 +442,7 @@ std::vector<tkc::CutlassGemmConfig> CutlassFp4GemmRunner<T, fp4GemmType>::getCon
     return candidateConfigs;
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSizeImpl(
     int const m, int const n, int const k, int const batch_count)
 {
@@ -466,7 +466,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSizeImpl(
     return workspace_size;
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSize(
     int const m, int const n, int const k, int const batch_count)
 {
@@ -502,7 +502,7 @@ size_t CutlassFp4GemmRunner<T, fp4GemmType>::getWorkspaceSize(
     return workspace_size;
 }
 
-template <typename T, FP4GemmType fp4GemmType>
+template <typename T, fp4_gemm::FP4GemmType fp4GemmType>
 bool CutlassFp4GemmRunner<T, fp4GemmType>::supportsGemmType(fp4_gemm::FP4GemmType type) const
 {
     // CUTLASS 后端支持所有 GEMM 类型

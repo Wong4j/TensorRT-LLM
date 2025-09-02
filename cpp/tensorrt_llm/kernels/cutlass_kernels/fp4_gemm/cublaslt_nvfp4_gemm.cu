@@ -62,8 +62,10 @@ public:
         cublasOperation_t transb = CUBLAS_OP_N;  // B 矩阵不转置
 
         // 调用 cuBLASLt NVFP4 GEMM
-        executeNvfp4Gemm<T>(transa, transb, m, n, k, global_sf, input_sf,
-            static_cast<const __nv_fp4_e2m1*>(A), k, weight_sf,
+        executeNvfp4Gemm<T>(transa, transb, m, n, k, global_sf, 
+            static_cast<const __nv_fp8_e4m3*>(input_sf),
+            static_cast<const __nv_fp4_e2m1*>(A), k, 
+            static_cast<const __nv_fp8_e4m3*>(weight_sf),
             static_cast<const __nv_fp4_e2m1*>(B), k, 0.0f,
             nullptr, static_cast<T*>(D), n, nullptr, nullptr, nullptr,
             workspace, workspaceBytes, stream);
