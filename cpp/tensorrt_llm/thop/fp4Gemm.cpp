@@ -38,9 +38,9 @@
 
 namespace tkc = tensorrt_llm::cutlass_extensions;
 #if defined(USING_OSS_CUTLASS_FP4_GEMM)
-using tensorrt_llm::kernels::cutlass_kernels::FP4GemmType;
+using tensorrt_llm::kernels::fp4_gemm::FP4GemmType;
 using tensorrt_llm::kernels::cutlass_kernels::CutlassFp4GemmRunner;
-using tensorrt_llm::kernels::cutlass_kernels::CutlassFp4GemmRunnerInterface;
+using tensorrt_llm::kernels::fp4_gemm::CutlassFp4GemmRunnerInterface;
 #else
 using tensorrt_llm::kernels::internal_cutlass_kernels::FP4GemmType;
 using tensorrt_llm::kernels::internal_cutlass_kernels::CutlassFp4GemmRunner;
