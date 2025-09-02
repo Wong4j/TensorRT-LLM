@@ -79,7 +79,7 @@ public:
     virtual FP4GemmBackend getBackendType() const = 0;
 
     // 检查是否支持指定的 GEMM 类型
-    virtual bool supportsGemmType(FP4GemmType gemmType) const = 0;
+    virtual bool supportsGemmType(FP4GemmType type) const = 0;
 };
 
 // 后端工厂类
@@ -89,7 +89,7 @@ public:
     // 创建 FP4 GEMM Runner
     template <typename T>
     static std::unique_ptr<IFp4GemmRunner> createRunner(
-        FP4GemmType gemmType, 
+        FP4GemmType type, 
         FP4GemmBackend backend = FP4GemmBackend::CUTLASS);
 
     // 获取可用的后端列表
@@ -99,7 +99,7 @@ public:
     static bool isBackendAvailable(FP4GemmBackend backend);
 
     // 获取推荐的后端
-    static FP4GemmBackend getRecommendedBackend(FP4GemmType gemmType);
+    static FP4GemmBackend getRecommendedBackend(FP4GemmType type);
 };
 
 // 为了向后兼容，保留原来的接口名称

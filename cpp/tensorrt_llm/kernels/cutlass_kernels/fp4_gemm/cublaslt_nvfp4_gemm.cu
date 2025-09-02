@@ -103,12 +103,12 @@ private:
             checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
             checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
-            // 设置块缩放模式
-            cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
-            cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
-            cublasLtMatmulMatrixScale_t CScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
-            cublasLtMatmulMatrixScale_t DScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
-            cublasLtMatmulMatrixScale_t DOutScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
+            // 设置块缩放模式 - 使用数值常量 (CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA = 0)
+            cublasLtMatmulMatrixScale_t AScaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
+            cublasLtMatmulMatrixScale_t BScaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
+            cublasLtMatmulMatrixScale_t CScaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
+            cublasLtMatmulMatrixScale_t DScaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
+            cublasLtMatmulMatrixScale_t DOutScaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
 
             checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, &AScaleMode, sizeof(AScaleMode)));
             checkCublasStatus(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, &BScaleMode, sizeof(BScaleMode)));

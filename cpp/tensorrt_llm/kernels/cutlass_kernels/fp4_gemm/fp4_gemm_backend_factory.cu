@@ -94,9 +94,9 @@ bool Fp4GemmBackendFactory::isBackendAvailable(FP4GemmBackend backend)
     }
 }
 
-FP4GemmBackend Fp4GemmBackendFactory::getRecommendedBackend(FP4GemmType gemmType)
+FP4GemmBackend Fp4GemmBackendFactory::getRecommendedBackend(FP4GemmType type)
 {
-    switch (gemmType)
+    switch (type)
     {
     case FP4GemmType::W4A4_NVFP4_NVFP4:
         // 对于 W4A4，优先使用 cuBLASLt（如果可用）
