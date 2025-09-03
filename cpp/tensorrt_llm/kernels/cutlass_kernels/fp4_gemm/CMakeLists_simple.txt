@@ -21,6 +21,7 @@ include_directories(
 
 # 链接目录
 link_directories(${CUDA_LIBRARY_DIRS})
+link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 
 # 源文件
 set(SOURCES
@@ -41,7 +42,6 @@ target_link_libraries(simple_test_cublaslt_fp4_gemm
     ${CUDA_LIBRARIES}
     cublasLt
     cublas
-    cudart
     curand
 )
 
