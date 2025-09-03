@@ -154,7 +154,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
             
             // 尝试使用默认算法
             cublasLtMatmulAlgo_t algo;
-            status = cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo);
+            status = cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
             if (status != CUBLAS_STATUS_SUCCESS) {
                 std::cerr << "错误: 无法初始化默认算法，错误代码: " << status << std::endl;
                 std::cerr << "当前硬件或 cuBLASLt 版本可能不支持 FP4 GEMM" << std::endl;
@@ -184,7 +184,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
             } else {
                 // 使用默认算法
                 cublasLtMatmulAlgo_t algo;
-                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo));
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo));
                 CUBLASLT_CHECK(cublasLtMatmul(
                     cublaslt_handle, operationDesc,
                     &h_global_scale[0],  // alpha
@@ -217,7 +217,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
             } else {
                 // 使用默认算法
                 cublasLtMatmulAlgo_t algo;
-                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo));
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo));
                 CUBLASLT_CHECK(cublasLtMatmul(
                     cublaslt_handle, operationDesc,
                     &h_global_scale[0],  // alpha
