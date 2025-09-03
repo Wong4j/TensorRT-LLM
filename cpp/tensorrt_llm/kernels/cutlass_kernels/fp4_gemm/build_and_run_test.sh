@@ -34,12 +34,14 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 echo "配置 CMake..."
-cmake -f ../CMakeLists_test.txt \
+# 复制自定义 CMakeLists.txt 到构建目录
+cp ../CMakeLists_test.txt ./CMakeLists.txt
+
+cmake . \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CUDA_ARCHITECTURES="80;86;89;90" \
     -DENABLE_CUBLASLT_FP4=ON \
-    -DUSING_OSS_CUTLASS_FP4_GEMM=ON \
-    ..
+    -DUSING_OSS_CUTLASS_FP4_GEMM=ON
 
 echo "开始编译..."
 make -j$(nproc)
