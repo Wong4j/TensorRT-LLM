@@ -1,0 +1,77 @@
+# CMake 文件用于构建 cuBLASLt FP4 GEMM 测试
+
+cmake_minimum_required(VERSION 3.20)
+project(cublaslt_fp4_gemm_test)
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 查找 CUDA
+find_package(CUDA REQUIRED)
+enable_language(CUDA)
+
+# 设置 CUDA 架构
+set(CMAKE_CUDA_ARCHITECTURES "80;86;89;90")
+
+# 包含目录
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../..
+    ${CUDA_INCLUDE_DIRS}
+)
+
+# 链接目录
+link_directories(${CUDA_LIBRARY_DIRS})
+
+# 源文件
+set(SOURCES
+    test_cublaslt_fp4_gemm.cpp
+    cublaslt_fp4_gemm_runner.cu
+    cublaslt_nvfp4_gemm.cu
+    fp4_gemm_backend_factory.cu
+)
+
+# 创建可执行文件
+add_executable(test_cublaslt_fp4_gemm ${SOURCES})
+
+# 设置 CUDA 属性
+set_target_properties(test_cublaslt_fp4_gemm PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
+
+# 链接库
+target_link_libraries(test_cublaslt_fp4_gemm
+    ${CUDA_LIBRARIES}
+    cublasLt
+    cublas
+    cudart
+    curand
+)
+
+# 编译选项
+target_compile_options(test_cublaslt_fp4_gemm PRIVATE
+    -O3
+    -std=c++17
+    -Wall
+    -Wextra
+)
+
+# CUDA 编译选项
+set_target_properties(test_cublaslt_fp4_gemm PROPERTIES
+    CUDA_ARCHITECTURES "80;86;89;90"
+)
+
+# 添加预处理器定义
+target_compile_definitions(test_cublaslt_fp4_gemm PRIVATE
+    ENABLE_CUBLASLT_FP4=1
+    USING_OSS_CUTLASS_FP4_GEMM=1
+)
+
+# 打印构建信息
+message(STATUS "构建 cuBLASLt FP4 GEMM 测试")
+message(STATUS "CUDA 架构: ${CMAKE_CUDA_ARCHITECTURES}")
+message(STATUS "C++ 标准: ${CMAKE_CXX_STANDARD}")
+message(STATUS "CUDA 版本: ${CUDA_VERSION}")
