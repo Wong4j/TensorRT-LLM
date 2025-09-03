@@ -45,8 +45,7 @@ bool testHardwareCompatibility() {
     cublasLtHandle_t cublaslt_handle;
     CUBLASLT_CHECK(cublasLtCreate(&cublaslt_handle));
     
-    int version;
-    CUBLASLT_CHECK(cublasLtGetVersion(cublaslt_handle, &version));
+    size_t version = cublasLtGetVersion();
     std::cout << "cuBLASLt 版本: " << version << std::endl;
     
     // 测试不同的数据类型支持
