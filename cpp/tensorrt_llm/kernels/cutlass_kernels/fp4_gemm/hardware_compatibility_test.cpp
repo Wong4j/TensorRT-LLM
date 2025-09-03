@@ -118,8 +118,9 @@ bool testHardwareCompatibility() {
     std::cout << "测试 FP4 GEMM 算法: ";
     cublasLtMatmulAlgo_t algo;
     cublasStatus_t status = cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, 
+                                                  CUDA_R_16F,  // scaleType
                                                   CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, 
-                                                  CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
+                                                  CUDA_R_16F, CUDA_R_16F, 0, &algo);
     if (status == CUBLAS_STATUS_SUCCESS) {
         std::cout << "✓ 支持" << std::endl;
     } else {
@@ -129,8 +130,9 @@ bool testHardwareCompatibility() {
     // 测试 FP8 GEMM 算法
     std::cout << "测试 FP8 GEMM 算法: ";
     status = cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, 
+                                   CUDA_R_16F,  // scaleType
                                    CUDA_R_8F_E4M3, CUDA_R_8F_E4M3, 
-                                   CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
+                                   CUDA_R_16F, CUDA_R_16F, 0, &algo);
     if (status == CUBLAS_STATUS_SUCCESS) {
         std::cout << "✓ 支持" << std::endl;
     } else {
@@ -140,8 +142,9 @@ bool testHardwareCompatibility() {
     // 测试 FP16 GEMM 算法
     std::cout << "测试 FP16 GEMM 算法: ";
     status = cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, 
+                                   CUDA_R_16F,  // scaleType
                                    CUDA_R_16F, CUDA_R_16F, 
-                                   CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
+                                   CUDA_R_16F, CUDA_R_16F, 0, &algo);
     if (status == CUBLAS_STATUS_SUCCESS) {
         std::cout << "✓ 支持" << std::endl;
     } else {

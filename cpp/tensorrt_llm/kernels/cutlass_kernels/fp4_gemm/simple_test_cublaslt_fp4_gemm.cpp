@@ -170,8 +170,9 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
                 for (auto& dataTypes : dataTypePairs) {
                     cublasLtMatmulAlgo_t algo;
                     status = cublasLtMatmulAlgoInit(cublaslt_handle, computeType, 
+                                                   CUDA_R_16F,  // scaleType
                                                    dataTypes.first, dataTypes.first, 
-                                                   CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
+                                                   CUDA_R_16F, CUDA_R_16F, 0, &algo);
                     if (status == CUBLAS_STATUS_SUCCESS) {
                         std::cout << "✓ 找到兼容的算法配置" << std::endl;
                         std::cout << "  计算类型: " << computeType << std::endl;
@@ -215,7 +216,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
             } else {
                 // 使用默认算法
                 cublasLtMatmulAlgo_t algo;
-                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo));
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, 0, &algo));
                 CUBLASLT_CHECK(cublasLtMatmul(
                     cublaslt_handle, operationDesc,
                     &h_global_scale[0],  // alpha
@@ -248,7 +249,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
             } else {
                 // 使用默认算法
                 cublasLtMatmulAlgo_t algo;
-                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo));
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, 0, &algo));
                 CUBLASLT_CHECK(cublasLtMatmul(
                     cublaslt_handle, operationDesc,
                     &h_global_scale[0],  // alpha
