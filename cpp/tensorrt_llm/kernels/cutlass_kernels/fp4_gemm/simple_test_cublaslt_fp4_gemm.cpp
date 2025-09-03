@@ -150,17 +150,48 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
 
         if (status != CUBLAS_STATUS_SUCCESS) {
             std::cout << "FP4 GEMM 算法获取失败，错误代码: " << status << std::endl;
-            std::cout << "尝试使用默认算法..." << std::endl;
+            std::cout << "尝试不同的计算类型和数据类型组合..." << std::endl;
             
-            // 尝试使用默认算法
-            cublasLtMatmulAlgo_t algo;
-            status = cublasLtMatmulAlgoInit(cublaslt_handle, CUBLAS_COMPUTE_16F, CUDA_R_4F_E2M1, CUDA_R_4F_E2M1, CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
-            if (status != CUBLAS_STATUS_SUCCESS) {
-                std::cerr << "错误: 无法初始化默认算法，错误代码: " << status << std::endl;
-                std::cerr << "当前硬件或 cuBLASLt 版本可能不支持 FP4 GEMM" << std::endl;
+            // 尝试不同的计算类型
+            std::vector<cublasComputeType_t> computeTypes = {
+                CUBLAS_COMPUTE_16F,
+                CUBLAS_COMPUTE_32F,
+                CUBLAS_COMPUTE_32I
+            };
+            
+            std::vector<std::pair<cudaDataType_t, cudaDataType_t>> dataTypePairs = {
+                {CUDA_R_4F_E2M1, CUDA_R_4F_E2M1},  // FP4 x FP4
+                {CUDA_R_8F_E4M3, CUDA_R_8F_E4M3},  // FP8 x FP8
+                {CUDA_R_16F, CUDA_R_16F}            // FP16 x FP16
+            };
+            
+            bool foundCompatible = false;
+            for (auto computeType : computeTypes) {
+                for (auto& dataTypes : dataTypePairs) {
+                    cublasLtMatmulAlgo_t algo;
+                    status = cublasLtMatmulAlgoInit(cublaslt_handle, computeType, 
+                                                   dataTypes.first, dataTypes.first, 
+                                                   CUDA_R_16F, CUDA_R_16F, CUDA_R_16F, 0, &algo);
+                    if (status == CUBLAS_STATUS_SUCCESS) {
+                        std::cout << "✓ 找到兼容的算法配置" << std::endl;
+                        std::cout << "  计算类型: " << computeType << std::endl;
+                        std::cout << "  数据类型: " << dataTypes.first << " x " << dataTypes.first << std::endl;
+                        foundCompatible = true;
+                        break;
+                    }
+                }
+                if (foundCompatible) break;
+            }
+            
+            if (!foundCompatible) {
+                std::cerr << "错误: 无法找到任何兼容的算法配置" << std::endl;
+                std::cerr << "当前硬件或 cuBLASLt 版本可能不支持低精度 GEMM" << std::endl;
+                std::cerr << "建议检查:" << std::endl;
+                std::cerr << "1. GPU 是否支持 FP4/FP8 计算" << std::endl;
+                std::cerr << "2. cuBLASLt 版本是否足够新" << std::endl;
+                std::cerr << "3. CUDA 版本是否支持 FP4/FP8" << std::endl;
                 return false;
             }
-            std::cout << "✓ 使用默认算法" << std::endl;
         } else if (returnedResults == 0) {
             std::cerr << "错误: 没有找到合适的算法" << std::endl;
             return false;

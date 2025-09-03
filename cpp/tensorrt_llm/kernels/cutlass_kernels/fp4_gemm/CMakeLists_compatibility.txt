@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.20)
+project(HardwareCompatibilityTest)
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 查找 CUDA
+find_package(CUDA REQUIRED)
+enable_language(CUDA)
+
+# 设置 CUDA 架构
+set(CMAKE_CUDA_ARCHITECTURES "80;86;89;90")
+
+# 创建可执行文件
+add_executable(hardware_compatibility_test hardware_compatibility_test.cpp)
+
+# 设置包含目录
+target_include_directories(hardware_compatibility_test PRIVATE
+    ${CUDA_INCLUDE_DIRS}
+)
+
+# 链接库
+target_link_libraries(hardware_compatibility_test
+    ${CUDA_LIBRARIES}
+    cublasLt
+    cudart
+)
+
+# 设置编译选项
+target_compile_options(hardware_compatibility_test PRIVATE
+    -O2
+    -Wall
+    -Wextra
+)
+
+# 设置 CUDA 编译选项
+set_target_properties(hardware_compatibility_test PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+)
