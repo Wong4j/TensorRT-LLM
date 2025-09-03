@@ -20,11 +20,13 @@ target_include_directories(hardware_compatibility_test PRIVATE
     ${CUDA_INCLUDE_DIRS}
 )
 
+# 链接库目录
+link_directories(${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+
 # 链接库
 target_link_libraries(hardware_compatibility_test
     ${CUDA_LIBRARIES}
     cublasLt
-    cudart
 )
 
 # 设置编译选项
