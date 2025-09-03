@@ -143,29 +143,58 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         cublasLtMatmulHeuristicResult_t heuristicResult;
         int returnedResults = 0;
         
-        CUBLASLT_CHECK(cublasLtMatmulAlgoGetHeuristic(
+        // 尝试获取算法，如果失败则尝试不同的配置
+        cublasStatus_t status = cublasLtMatmulAlgoGetHeuristic(
             cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc,
-            preference, 1, &heuristicResult, &returnedResults));
+            preference, 1, &heuristicResult, &returnedResults);
 
-        if (returnedResults == 0) {
+        if (status != CUBLAS_STATUS_SUCCESS) {
+            std::cout << "FP4 GEMM 算法获取失败，错误代码: " << status << std::endl;
+            std::cout << "尝试使用默认算法..." << std::endl;
+            
+            // 尝试使用默认算法
+            cublasLtMatmulAlgo_t algo;
+            status = cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo);
+            if (status != CUBLAS_STATUS_SUCCESS) {
+                std::cerr << "错误: 无法初始化默认算法，错误代码: " << status << std::endl;
+                std::cerr << "当前硬件或 cuBLASLt 版本可能不支持 FP4 GEMM" << std::endl;
+                return false;
+            }
+            std::cout << "✓ 使用默认算法" << std::endl;
+        } else if (returnedResults == 0) {
             std::cerr << "错误: 没有找到合适的算法" << std::endl;
             return false;
+        } else {
+            std::cout << "✓ 找到合适的算法" << std::endl;
         }
-
-        std::cout << "✓ 找到合适的算法" << std::endl;
 
         // 预热
         std::cout << "执行预热..." << std::endl;
         for (int i = 0; i < 3; ++i) {
-            CUBLASLT_CHECK(cublasLtMatmul(
-                cublaslt_handle, operationDesc,
-                &h_global_scale[0],  // alpha
-                d_input, Adesc,      // A
-                d_weight, Bdesc,     // B
-                nullptr,             // beta
-                d_output, Cdesc,     // C
-                d_output, Ddesc,     // D
-                &heuristicResult.algo, nullptr, 0, stream));
+            if (status == CUBLAS_STATUS_SUCCESS && returnedResults > 0) {
+                CUBLASLT_CHECK(cublasLtMatmul(
+                    cublaslt_handle, operationDesc,
+                    &h_global_scale[0],  // alpha
+                    d_input, Adesc,      // A
+                    d_weight, Bdesc,     // B
+                    nullptr,             // beta
+                    d_output, Cdesc,     // C
+                    d_output, Ddesc,     // D
+                    &heuristicResult.algo, nullptr, 0, stream));
+            } else {
+                // 使用默认算法
+                cublasLtMatmulAlgo_t algo;
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo));
+                CUBLASLT_CHECK(cublasLtMatmul(
+                    cublaslt_handle, operationDesc,
+                    &h_global_scale[0],  // alpha
+                    d_input, Adesc,      // A
+                    d_weight, Bdesc,     // B
+                    nullptr,             // beta
+                    d_output, Cdesc,     // C
+                    d_output, Ddesc,     // D
+                    &algo, nullptr, 0, stream));
+            }
         }
         CUDA_CHECK(cudaStreamSynchronize(stream));
 
@@ -175,15 +204,30 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         auto start = std::chrono::high_resolution_clock::now();
 
         for (int i = 0; i < num_iterations; ++i) {
-            CUBLASLT_CHECK(cublasLtMatmul(
-                cublaslt_handle, operationDesc,
-                &h_global_scale[0],  // alpha
-                d_input, Adesc,      // A
-                d_weight, Bdesc,     // B
-                nullptr,             // beta
-                d_output, Cdesc,     // C
-                d_output, Ddesc,     // D
-                &heuristicResult.algo, nullptr, 0, stream));
+            if (status == CUBLAS_STATUS_SUCCESS && returnedResults > 0) {
+                CUBLASLT_CHECK(cublasLtMatmul(
+                    cublaslt_handle, operationDesc,
+                    &h_global_scale[0],  // alpha
+                    d_input, Adesc,      // A
+                    d_weight, Bdesc,     // B
+                    nullptr,             // beta
+                    d_output, Cdesc,     // C
+                    d_output, Ddesc,     // D
+                    &heuristicResult.algo, nullptr, 0, stream));
+            } else {
+                // 使用默认算法
+                cublasLtMatmulAlgo_t algo;
+                CUBLASLT_CHECK(cublasLtMatmulAlgoInit(cublaslt_handle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, &algo));
+                CUBLASLT_CHECK(cublasLtMatmul(
+                    cublaslt_handle, operationDesc,
+                    &h_global_scale[0],  // alpha
+                    d_input, Adesc,      // A
+                    d_weight, Bdesc,     // B
+                    nullptr,             // beta
+                    d_output, Cdesc,     // C
+                    d_output, Ddesc,     // D
+                    &algo, nullptr, 0, stream));
+            }
         }
 
         CUDA_CHECK(cudaStreamSynchronize(stream));
