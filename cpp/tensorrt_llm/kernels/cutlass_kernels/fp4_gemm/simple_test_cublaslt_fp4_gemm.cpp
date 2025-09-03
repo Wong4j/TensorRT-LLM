@@ -59,7 +59,7 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         size_t input_scale_size = m;
         size_t weight_scale_size = k;
 
-        // 主机内存
+        // 主机内存 - FP4 GEMM 测试
         std::vector<__nv_fp4_e2m1> h_input(input_size);
         std::vector<__nv_fp4_e2m1> h_weight(weight_size);
         std::vector<half> h_output(output_size);
@@ -99,9 +99,9 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         cudaStream_t stream;
         CUDA_CHECK(cudaStreamCreate(&stream));
 
-        // 创建操作描述符
+        // 创建操作描述符 - 使用 FP16 计算类型以支持 FP4
         cublasLtMatmulDesc_t operationDesc;
-        CUBLASLT_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
+        CUBLASLT_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_16F, CUDA_R_16F));
 
         // 设置操作类型
         cublasOperation_t transa = CUBLAS_OP_N;
@@ -109,21 +109,27 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
+        // 设置 FP4 特定的属性
+        cublasLtMatmulMatrixScale_t scaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
+        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
+        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
+        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
+
         std::cout << "✓ cuBLASLt 操作描述符创建成功" << std::endl;
 
         // 创建矩阵布局描述符
         cublasLtMatrixLayout_t Adesc, Bdesc, Cdesc, Ddesc;
         
-        // A 矩阵布局 (输入)
+        // A 矩阵布局 (输入) - FP4 类型
         CUBLASLT_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, m));
         
-        // B 矩阵布局 (权重)
+        // B 矩阵布局 (权重) - FP4 类型
         CUBLASLT_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, k));
         
-        // C 矩阵布局 (输出)
+        // C 矩阵布局 (输出) - FP16 类型
         CUBLASLT_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16F, m, n, m));
         
-        // D 矩阵布局 (输出)
+        // D 矩阵布局 (输出) - FP16 类型
         CUBLASLT_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16F, m, n, m));
 
         std::cout << "✓ 矩阵布局描述符创建成功" << std::endl;
