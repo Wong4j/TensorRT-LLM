@@ -109,8 +109,8 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
-        // 设置 FP4 特定的属性
-        cublasLtMatmulMatrixScale_t scaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_ALPHA;
+        // 设置 FP4 特定的属性 - 使用数值常量
+        cublasLtMatmulMatrixScale_t scaleMode = static_cast<cublasLtMatmulMatrixScale_t>(0);
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
         CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_MODE, &scaleMode, sizeof(scaleMode)));
