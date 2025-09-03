@@ -28,10 +28,10 @@ link_directories(${CUDA_LIBRARY_DIRS})
 
 # 源文件
 set(SOURCES
-    test_cublaslt_fp4_gemm.cpp
-    cublaslt_fp4_gemm_runner.cu
-    cublaslt_nvfp4_gemm.cu
-    fp4_gemm_backend_factory.cu
+    ../test_cublaslt_fp4_gemm.cpp
+    ../cublaslt_fp4_gemm_runner.cu
+    ../cublaslt_nvfp4_gemm.cu
+    ../fp4_gemm_backend_factory.cu
 )
 
 # 创建可执行文件
