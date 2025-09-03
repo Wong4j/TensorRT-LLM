@@ -104,8 +104,10 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         CUBLASLT_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
 
         // 设置操作类型
-        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
-        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
+        cublasOperation_t transa = CUBLAS_OP_N;
+        cublasOperation_t transb = CUBLAS_OP_N;
+        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, &transa, sizeof(transa)));
+        CUBLASLT_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, &transb, sizeof(transb)));
 
         std::cout << "✓ cuBLASLt 操作描述符创建成功" << std::endl;
 
@@ -129,7 +131,8 @@ bool testSimpleCublasLtFp4Gemm(int m, int n, int k) {
         // 获取算法
         cublasLtMatmulPreference_t preference;
         CUBLASLT_CHECK(cublasLtMatmulPreferenceCreate(&preference));
-        CUBLASLT_CHECK(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &(size_t){1024*1024*1024}, sizeof(size_t)));
+        size_t workspace_size_limit = 1024*1024*1024;
+        CUBLASLT_CHECK(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, &workspace_size_limit, sizeof(workspace_size_limit)));
 
         cublasLtMatmulHeuristicResult_t heuristicResult;
         int returnedResults = 0;
@@ -246,17 +249,22 @@ int main() {
     std::cout << "计算能力: " << prop.major << "." << prop.minor << std::endl;
 
     // 测试不同矩阵尺寸
-    std::vector<std::pair<std::pair<int, int, int>, std::string>> testConfigs = {
-        {{128, 128, 128}, "小矩阵测试"},
-        {{256, 256, 256}, "中等矩阵测试"},
-        {{512, 512, 512}, "大矩阵测试"}
+    struct TestConfig {
+        int m, n, k;
+        std::string description;
+    };
+    
+    std::vector<TestConfig> testConfigs = {
+        {128, 128, 128, "小矩阵测试"},
+        {256, 256, 256, "中等矩阵测试"},
+        {512, 512, 512, "大矩阵测试"}
     };
 
     for (const auto& config : testConfigs) {
-        int m = config.first.first;
-        int n = config.first.second;
-        int k = config.first.third;
-        std::string description = config.second;
+        int m = config.m;
+        int n = config.n;
+        int k = config.k;
+        std::string description = config.description;
 
         std::cout << "\n--- " << description << " ---" << std::endl;
         if (!testSimpleCublasLtFp4Gemm(m, n, k)) {
