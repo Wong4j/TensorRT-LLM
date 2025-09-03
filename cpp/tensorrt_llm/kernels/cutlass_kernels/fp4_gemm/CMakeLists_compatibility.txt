@@ -13,7 +13,7 @@ enable_language(CUDA)
 set(CMAKE_CUDA_ARCHITECTURES "80;86;89;90")
 
 # 创建可执行文件
-add_executable(hardware_compatibility_test hardware_compatibility_test.cpp)
+add_executable(hardware_compatibility_test ../hardware_compatibility_test.cpp)
 
 # 设置包含目录
 target_include_directories(hardware_compatibility_test PRIVATE
