@@ -25,11 +25,11 @@ if(ENABLE_CUBLASLT_FP4_GEMM)
     target_include_directories(cublaslt_fp4_gemm PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/fp4_gemm
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..  # 添加 tensorrt_llm 根目录
     )
     
     target_link_libraries(cublaslt_fp4_gemm PRIVATE
         CUDA::cublasLt
-        tensorrt_llm::common
     )
     
     target_compile_definitions(cublaslt_fp4_gemm PRIVATE
