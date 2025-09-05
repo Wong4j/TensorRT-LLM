@@ -419,8 +419,22 @@ class FP4GemmRunner(TunableRunner):
         inputs: List[torch.Tensor],
         tactic: int = -1,
     ) -> torch.Tensor:
+        import logging
+        logger = logging.getLogger(__name__)
+        
         mat1, mat2, mat1_scale, mat2_scale, global_scale = inputs
-        return self.fp4_gemm_runner.run_gemm(
+        
+        # 打印 CUTLASS 输入信息
+        logger.info(f"[FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:")
+        logger.info(f"[FP4GemmRunner::forward]   mat1 (act_fp4): shape={list(mat1.shape)}, dtype={mat1.dtype}")
+        logger.info(f"[FP4GemmRunner::forward]   mat2 (weight): shape={list(mat2.shape)}, dtype={mat2.dtype}")
+        logger.info(f"[FP4GemmRunner::forward]   mat1_scale: shape={list(mat1_scale.shape)}, dtype={mat1_scale.dtype}")
+        logger.info(f"[FP4GemmRunner::forward]   mat2_scale: shape={list(mat2_scale.shape)}, dtype={mat2_scale.dtype}")
+        logger.info(f"[FP4GemmRunner::forward]   global_scale: shape={list(global_scale.shape)}, dtype={global_scale.dtype}")
+        logger.info(f"[FP4GemmRunner::forward]   tactic: {tactic}, to_userbuffers: {self.to_userbuffers}")
+        logger.info(f"[FP4GemmRunner::forward]   fp4_gemm_type: {self.fp4_gemm_type}, output_dtype: {self.output_dtype}")
+        
+        result = self.fp4_gemm_runner.run_gemm(
             mat1,
             mat2,
             mat1_scale,
@@ -429,6 +443,9 @@ class FP4GemmRunner(TunableRunner):
             self.to_userbuffers,
             tactic,
         )
+        
+        logger.info(f"[FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape={list(result.shape)}, dtype={result.dtype}")
+        return result
 
 
 @torch.library.custom_op("trtllm::nvfp4_gemm", mutates_args=())
@@ -442,6 +459,19 @@ def nvfp4_gemm(
     to_userbuffers: bool = False,
     backend: str = "cutlass",  # 新增后端选择参数
 ) -> torch.Tensor:
+    import logging
+    
+    # 获取 logger
+    logger = logging.getLogger(__name__)
+    
+    # 打印输入信息
+    logger.info(f"[nvfp4_gemm] Backend: {backend}")
+    logger.info(f"[nvfp4_gemm] Input shapes - act_fp4: {list(act_fp4.shape)}, weight: {list(weight.shape)}")
+    logger.info(f"[nvfp4_gemm] Input dtypes - act_fp4: {act_fp4.dtype}, weight: {weight.dtype}")
+    logger.info(f"[nvfp4_gemm] Scale shapes - act_sf: {list(act_sf.shape)}, weight_scale: {list(weight_scale.shape)}")
+    logger.info(f"[nvfp4_gemm] Scale dtypes - act_sf: {act_sf.dtype}, weight_scale: {weight_scale.dtype}")
+    logger.info(f"[nvfp4_gemm] Alpha shape: {list(alpha.shape)}, dtype: {alpha.dtype}")
+    logger.info(f"[nvfp4_gemm] Output dtype: {output_dtype}, to_userbuffers: {to_userbuffers}")
 
     # 验证后端选择
     if backend not in ["cutlass", "cublaslt"]:
@@ -449,10 +479,12 @@ def nvfp4_gemm(
     
     if backend == "cublaslt":
         # 直接调用 cuBLASLt 实现，使用内置 heuristic，跳过 tuner
-        return cublaslt_nvfp4_gemm_impl(
+        result = cublaslt_nvfp4_gemm_impl(
             act_fp4, weight, act_sf, weight_scale, alpha, 
             output_dtype, to_userbuffers
         )
+        logger.info(f"[nvfp4_gemm] cuBLASLt output shape: {list(result.shape)}, dtype: {result.dtype}")
+        return result
     else:
         # 现有的 CUTLASS 实现（带 TensorRT-LLM tuner）
         tuner = AutoTuner.get()
@@ -468,9 +500,11 @@ def nvfp4_gemm(
             [act_fp4, weight, act_sf, weight_scale, alpha],
         )
 
-        return nvfp4_gemm_runner(
+        result = nvfp4_gemm_runner(
             inputs=[act_fp4, weight, act_sf, weight_scale, alpha],
             tactic=best_tactic)
+        logger.info(f"[nvfp4_gemm] CUTLASS output shape: {list(result.shape)}, dtype: {result.dtype}")
+        return result
 
 
 def cublaslt_nvfp4_gemm_impl(
@@ -483,6 +517,18 @@ def cublaslt_nvfp4_gemm_impl(
     to_userbuffers: bool = False,
 ) -> torch.Tensor:
     """cuBLASLt FP4 GEMM 实现，使用内置 heuristic"""
+    import logging
+    
+    # 获取 logger
+    logger = logging.getLogger(__name__)
+    
+    # 打印输入信息
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: {list(act_fp4.shape)}, weight: {list(weight.shape)}")
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: {act_fp4.dtype}, weight: {weight.dtype}")
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: {list(act_sf.shape)}, weight_scale: {list(weight_scale.shape)}")
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: {act_sf.dtype}, weight_scale: {weight_scale.dtype}")
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Alpha shape: {list(alpha.shape)}, dtype: {alpha.dtype}")
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Output dtype: {output_dtype}, to_userbuffers: {to_userbuffers}")
     
     # 验证输入类型
     if act_fp4.dtype != fp4_utils.FLOAT4_E2M1X2:
@@ -492,17 +538,23 @@ def cublaslt_nvfp4_gemm_impl(
     
     # 创建输出张量
     output_shape = [act_fp4.size(0), weight.size(0)]
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: {output_shape}")
+    
     if to_userbuffers:
         from ..utils import create_userbuffers_tensor
         out = create_userbuffers_tensor(output_shape, output_dtype)[0]
     else:
         out = torch.empty(output_shape, dtype=output_dtype, device=act_fp4.device)
     
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Created output tensor - shape: {list(out.shape)}, dtype: {out.dtype}, device: {out.device}")
+    
     # 调用 C++ cuBLASLt 实现（使用内置 heuristic）
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation...")
     torch.ops.trtllm.cublaslt_nvfp4_gemm(
         out, act_fp4, weight, act_sf, weight_scale, alpha
     )
     
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: {list(out.shape)}, dtype: {out.dtype}")
     return out
 
 

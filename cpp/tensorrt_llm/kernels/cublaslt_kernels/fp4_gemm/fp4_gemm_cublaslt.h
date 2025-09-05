@@ -99,13 +99,20 @@ void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
                                     int batch_count, char* workspace, const size_t workspaceBytes,
                                     cudaStream_t stream)
 {
-    TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM");
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=" + std::to_string(m) + 
+                  ", n=" + std::to_string(n) + ", k=" + std::to_string(k) + 
+                  ", batch_count=" + std::to_string(batch_count));
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Workspace size: " + std::to_string(workspaceBytes) + " bytes");
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Output type: " + std::string(typeid(T).name()));
     
     // 验证输入类型
     validateInputTypes(A, B, input_sf, weight_sf);
     
     // 执行 cuBLASLt GEMM
     executeCublasLtGemm(D, A, B, input_sf, weight_sf, global_sf, m, n, k, workspace, workspaceBytes, stream);
+    
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully");
 }
 
 template <typename T>
@@ -123,7 +130,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                                    float const* global_sf, int m, int n, int k,
                                                    char* workspace, const size_t workspaceBytes, cudaStream_t stream)
 {
-    TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution");
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=" + std::to_string(m) + 
+                  ", n=" + std::to_string(n) + ", k=" + std::to_string(k));
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: " + std::to_string(workspaceBytes) + " bytes");
     
     cublasLtMatmulDesc_t operationDesc = nullptr;
     cublasLtMatrixLayout_t Adesc = nullptr, Bdesc = nullptr, Cdesc = nullptr, Ddesc = nullptr;
@@ -135,6 +145,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
     try
     {
         // 创建操作描述符
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor");
         TLLM_CUDA_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
         cublasOperation_t transa = CUBLAS_OP_N;
         cublasOperation_t transb = CUBLAS_OP_N;
@@ -153,6 +164,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                                      &weight_sf, sizeof(weight_sf)));
         
         // 创建矩阵描述符
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors");
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
         
@@ -167,23 +179,28 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         } else {
             throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
         }
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Output type: " + std::to_string(outputType));
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n)); // D is FP4 in sample
         
         // 创建偏好描述符
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor");
         TLLM_CUDA_CHECK(cublasLtMatmulPreferenceCreate(&preference));
         TLLM_CUDA_CHECK(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, 
                                                            &workspaceBytes, sizeof(workspaceBytes)));
         
         // 获取启发式算法
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm");
         TLLM_CUDA_CHECK(cublasLtMatmulAlgoGetHeuristic(mCublasLtHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, 
                                                      preference, 1, &heuristicResult, &returnedResults));
         
         if (returnedResults == 0) {
             throw std::runtime_error("No suitable cuBLASLt algorithm found for FP4 GEMM");
         }
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Found " + std::to_string(returnedResults) + " suitable algorithms");
         
         // 执行 matmul
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul");
         float alpha = 1.0f;
         float beta = 0.0f;
         
@@ -202,6 +219,8 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                      workspace,
                                      workspaceBytes,
                                      0));
+        
+        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully");
         
         // 清理资源
         if (preference) cublasLtMatmulPreferenceDestroy(preference);

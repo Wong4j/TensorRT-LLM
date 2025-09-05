@@ -99,6 +99,17 @@ void runGemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, at
     at::Tensor const& mat2Scale, at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, int64_t batch_count,
     tkc::CutlassGemmConfig const& gemmConfig, FP4GemmType fp4GemmType, Fp4GemmBackend backend = Fp4GemmBackend::CUTLASS)
 {
+    TLLM_LOG_INFO("[runGemm] Starting FP4 GEMM execution");
+    TLLM_LOG_INFO("[runGemm] Backend: " + std::string(backend == Fp4GemmBackend::CUBLASLT ? "cuBLASLt" : "CUTLASS"));
+    TLLM_LOG_INFO("[runGemm] Output type: " + std::string(typeid(T).name()));
+    TLLM_LOG_INFO("[runGemm] Input tensor shapes:");
+    TLLM_LOG_INFO("[runGemm]   mat1: [" + std::to_string(mat1.sizes()[0]) + ", " + std::to_string(mat1.sizes()[1]) + "]");
+    TLLM_LOG_INFO("[runGemm]   mat2: [" + std::to_string(mat2.sizes()[0]) + ", " + std::to_string(mat2.sizes()[1]) + "]");
+    TLLM_LOG_INFO("[runGemm]   mat1Scale: [" + std::to_string(mat1Scale.sizes()[0]) + "]");
+    TLLM_LOG_INFO("[runGemm]   mat2Scale: [" + std::to_string(mat2Scale.sizes()[0]) + "]");
+    TLLM_LOG_INFO("[runGemm]   globalScale: [" + std::to_string(globalScale.sizes()[0]) + "]");
+    TLLM_LOG_INFO("[runGemm]   output: [" + std::to_string(out.sizes()[0]) + ", " + std::to_string(out.sizes()[1]) + "]");
+    
     if (backend == Fp4GemmBackend::CUBLASLT)
     {
 #ifdef ENABLE_CUBLASLT_FP4_GEMM
@@ -126,27 +137,41 @@ void runGemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, at
     else
     {
         // 现有的 CUTLASS 实现
+        TLLM_LOG_INFO("[runGemm] Using CUTLASS backend for FP4 GEMM");
+        TLLM_LOG_INFO("[runGemm] FP4 GEMM type: " + std::to_string(static_cast<int>(fp4GemmType)));
+        TLLM_LOG_INFO("[runGemm] GEMM dimensions: m=" + std::to_string(m) + 
+                      ", n=" + std::to_string(n) + ", k=" + std::to_string(k) + 
+                      ", batch_count=" + std::to_string(batch_count));
+        
         if (fp4GemmType == FP4GemmType::W4A8_MXFP4_MXFP8)
         {
+            TLLM_LOG_INFO("[runGemm] Using W4A8_MXFP4_MXFP8 CUTLASS runner");
             CutlassFp4GemmRunner<T, FP4GemmType::W4A8_MXFP4_MXFP8> gemmRunner;
             int64_t const wsBytes = gemmRunner.getWorkspaceSize(m, n, k, batch_count);
+            TLLM_LOG_INFO("[runGemm] CUTLASS workspace size: " + std::to_string(wsBytes) + " bytes");
 
             at::Tensor workspace = at::detail::empty_cuda({wsBytes}, at::ScalarType::Char, mat1.device(), std::nullopt);
 
+            TLLM_LOG_INFO("[runGemm] Executing CUTLASS W4A8_MXFP4_MXFP8 GEMM");
             gemmRunner.gemm(out.data_ptr(), mat1.const_data_ptr(), mat2.const_data_ptr(), mat1Scale.const_data_ptr(),
                 mat2Scale.const_data_ptr(), globalScale.data_ptr<float>(), m, n, k, batch_count, gemmConfig,
                 reinterpret_cast<char*>(workspace.data_ptr()), wsBytes, at::cuda::getCurrentCUDAStream(mat1.get_device()));
+            TLLM_LOG_INFO("[runGemm] CUTLASS W4A8_MXFP4_MXFP8 GEMM completed");
         }
         else if (fp4GemmType == FP4GemmType::W4A4_NVFP4_NVFP4)
         {
+            TLLM_LOG_INFO("[runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner");
             CutlassFp4GemmRunner<T, FP4GemmType::W4A4_NVFP4_NVFP4> gemmRunner;
             int64_t const wsBytes = gemmRunner.getWorkspaceSize(m, n, k, batch_count);
+            TLLM_LOG_INFO("[runGemm] CUTLASS workspace size: " + std::to_string(wsBytes) + " bytes");
 
             at::Tensor workspace = at::detail::empty_cuda({wsBytes}, at::ScalarType::Char, mat1.device(), std::nullopt);
 
+            TLLM_LOG_INFO("[runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM");
             gemmRunner.gemm(out.data_ptr(), mat1.const_data_ptr(), mat2.const_data_ptr(), mat1Scale.const_data_ptr(),
                 mat2Scale.const_data_ptr(), globalScale.data_ptr<float>(), m, n, k, batch_count, gemmConfig,
                 reinterpret_cast<char*>(workspace.data_ptr()), wsBytes, at::cuda::getCurrentCUDAStream(mat1.get_device()));
+            TLLM_LOG_INFO("[runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed");
         }
     }
 }
@@ -347,25 +372,52 @@ void cublaslt_nvfp4_gemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor con
                         at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
                         at::Tensor const& globalScale)
 {
+    // 打印输入信息
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] Input tensor shapes:");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat1 (act_fp4): [" + 
+                  std::to_string(mat1.sizes()[0]) + ", " + std::to_string(mat1.sizes()[1]) + "]");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat2 (weight): [" + 
+                  std::to_string(mat2.sizes()[0]) + ", " + std::to_string(mat2.sizes()[1]) + "]");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat1Scale: [" + 
+                  std::to_string(mat1Scale.sizes()[0]) + "]");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat2Scale: [" + 
+                  std::to_string(mat2Scale.sizes()[0]) + "]");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   globalScale: [" + 
+                  std::to_string(globalScale.sizes()[0]) + "]");
+    
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] Input tensor dtypes:");
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat1 dtype: " + std::to_string(static_cast<int>(mat1.scalar_type())));
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat2 dtype: " + std::to_string(static_cast<int>(mat2.scalar_type())));
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat1Scale dtype: " + std::to_string(static_cast<int>(mat1Scale.scalar_type())));
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   mat2Scale dtype: " + std::to_string(static_cast<int>(mat2Scale.scalar_type())));
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   globalScale dtype: " + std::to_string(static_cast<int>(globalScale.scalar_type())));
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm]   output dtype: " + std::to_string(static_cast<int>(out.scalar_type())));
+    
     int64_t m = mat1.sizes()[0];
     int64_t n = mat2.sizes()[0];
     int64_t k = mat2.sizes()[1] * 2; // FP4 压缩了 K 维度
+    
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] GEMM dimensions: m=" + std::to_string(m) + 
+                  ", n=" + std::to_string(n) + ", k=" + std::to_string(k));
     
     // 根据输出类型调用相应的模板
     switch (out.scalar_type())
     {
     case at::ScalarType::Half:
+        TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] Using half precision template");
         runGemm<half>(out, mat1, mat2, mat1Scale, mat2Scale, globalScale, 
                      m, n, k, 1, tkc::CutlassGemmConfig{}, 
                      FP4GemmType::W4A4_NVFP4_NVFP4, Fp4GemmBackend::CUBLASLT);
         break;
     case at::ScalarType::Float:
+        TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] Using float precision template");
         runGemm<float>(out, mat1, mat2, mat1Scale, mat2Scale, globalScale, 
                       m, n, k, 1, tkc::CutlassGemmConfig{}, 
                       FP4GemmType::W4A4_NVFP4_NVFP4, Fp4GemmBackend::CUBLASLT);
         break;
 #ifdef ENABLE_BF16
     case at::ScalarType::BFloat16:
+        TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] Using bfloat16 precision template");
         runGemm<__nv_bfloat16>(out, mat1, mat2, mat1Scale, mat2Scale, globalScale, 
                               m, n, k, 1, tkc::CutlassGemmConfig{}, 
                               FP4GemmType::W4A4_NVFP4_NVFP4, Fp4GemmBackend::CUBLASLT);
@@ -374,6 +426,8 @@ void cublaslt_nvfp4_gemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor con
     default:
         throw std::runtime_error("Unsupported output dtype for cuBLASLt FP4 GEMM");
     }
+    
+    TLLM_LOG_INFO("[cublaslt_nvfp4_gemm] GEMM computation completed successfully");
 }
 
 // 显式模板实例化
