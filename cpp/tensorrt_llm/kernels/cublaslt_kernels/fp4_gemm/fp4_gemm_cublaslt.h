@@ -29,6 +29,35 @@ namespace kernels
 namespace cublaslt_kernels
 {
 
+// 模板类定义
+template <typename T>
+class CublasLtFp4GemmRunner : public virtual CublasLtFp4GemmRunnerInterface
+{
+public:
+    CublasLtFp4GemmRunner();
+    ~CublasLtFp4GemmRunner();
+    
+    void gemm(void* D, void const* A, void const* B, 
+             void const* input_sf, void const* weight_sf,
+             float const* global_sf, int m, int n, int k, 
+             int batch_count, char* workspace, const size_t workspaceBytes, 
+             cudaStream_t stream) override;
+    
+    size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) override;
+
+private:
+    void validateInputTypes(void const* A, void const* B, 
+                           void const* input_sf, void const* weight_sf);
+    void executeCublasLtGemm(void* D, void const* A, void const* B, 
+                            void const* input_sf, void const* weight_sf,
+                            float const* global_sf, int m, int n, int k, 
+                            char* workspace, const size_t workspaceBytes, cudaStream_t stream);
+    
+    cublasLtHandle_t mCublasLtHandle;
+    int mSm;
+};
+
+// 模板类实现
 template <typename T>
 CublasLtFp4GemmRunner<T>::CublasLtFp4GemmRunner()
 {
