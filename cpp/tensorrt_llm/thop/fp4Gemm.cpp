@@ -395,24 +395,24 @@ TORCH_LIBRARY_FRAGMENT(trtllm, m)
 }
 
 // 显式模板实例化
-template void runGemm<half>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
-                           at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
-                           at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
-                           int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
-                           FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+template void torch_ext::runGemm<half>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                                      at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                                      at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                                      int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                                      FP4GemmType fp4GemmType, Fp4GemmBackend backend);
 
-template void runGemm<float>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
-                            at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
-                            at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
-                            int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
-                            FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+template void torch_ext::runGemm<float>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                                       at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                                       at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                                       int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                                       FP4GemmType fp4GemmType, Fp4GemmBackend backend);
 
 #ifdef ENABLE_BF16
-template void runGemm<__nv_bfloat16>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
-                                    at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
-                                    at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
-                                    int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
-                                    FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+template void torch_ext::runGemm<__nv_bfloat16>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                                               at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                                               at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                                               int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                                               FP4GemmType fp4GemmType, Fp4GemmBackend backend);
 #endif
 
 TORCH_LIBRARY_IMPL(trtllm, CUDA, m)
