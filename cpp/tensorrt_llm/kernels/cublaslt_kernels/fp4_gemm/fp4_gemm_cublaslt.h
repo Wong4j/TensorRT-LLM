@@ -19,6 +19,7 @@
 #include "fp4_gemm.h"
 #include "tensorrt_llm/common/cudaUtils.h"
 #include "tensorrt_llm/common/logger.h"
+#include "tensorrt_llm/common/opUtils.h"
 #include <cuda_fp4.h>
 #include <cuda_fp8.h>
 
@@ -62,7 +63,7 @@ template <typename T>
 CublasLtFp4GemmRunner<T>::CublasLtFp4GemmRunner()
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
-    checkCudaError(cublasLtCreate(&mCublasLtHandle));
+    TLLM_CUDA_CHECK(cublasLtCreate(&mCublasLtHandle));
     mSm = tensorrt_llm::common::getSMVersion();
 }
 
@@ -119,28 +120,26 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
     try
     {
         // 创建操作描述符
-        checkCudaError(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, 
-                                                     &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
-                                                     &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
+        cublasOperation_t transa = CUBLAS_OP_N;
+        cublasOperation_t transb = CUBLAS_OP_N;
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, 
+                                                     &transa, sizeof(transa)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
+                                                     &transb, sizeof(transb)));
         
-        // 设置缩放模式
-        cublasLtMatmulMatrixScale_t scaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, 
-                                                     &scaleMode, sizeof(scaleMode)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, 
-                                                     &scaleMode, sizeof(scaleMode)));
+        // 设置缩放模式 - 使用默认的缩放模式
+        // 注意：对于 FP4 GEMM，缩放通常通过指针设置，不需要额外的模式设置
         
         // 设置缩放指针
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
                                                      &input_sf, sizeof(input_sf)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
                                                      &weight_sf, sizeof(weight_sf)));
         
         // 创建矩阵描述符
-        checkCudaError(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
-        checkCudaError(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
         
         // 根据输出类型创建 C 和 D 描述符
         cudaDataType_t outputType;
@@ -153,16 +152,16 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         } else {
             throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
         }
-        checkCudaError(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
-        checkCudaError(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n)); // D is FP4 in sample
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n)); // D is FP4 in sample
         
         // 创建偏好描述符
-        checkCudaError(cublasLtMatmulPreferenceCreate(&preference));
-        checkCudaError(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, 
+        TLLM_CUDA_CHECK(cublasLtMatmulPreferenceCreate(&preference));
+        TLLM_CUDA_CHECK(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, 
                                                            &workspaceBytes, sizeof(workspaceBytes)));
         
         // 获取启发式算法
-        checkCudaError(cublasLtMatmulAlgoGetHeuristic(mCublasLtHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, 
+        TLLM_CUDA_CHECK(cublasLtMatmulAlgoGetHeuristic(mCublasLtHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, 
                                                      preference, 1, &heuristicResult, &returnedResults));
         
         if (returnedResults == 0) {
@@ -176,7 +175,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         // In cuBLASLt FP4 GEMM:
         // - C is the intermediate result (bfloat16) - this is our desired final output type
         // - D is the final output (FP4) - we don't need this for our T-typed output
-        checkCudaError(cublasLtMatmul(mCublasLtHandle,
+        TLLM_CUDA_CHECK(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
                                      A, Adesc,
