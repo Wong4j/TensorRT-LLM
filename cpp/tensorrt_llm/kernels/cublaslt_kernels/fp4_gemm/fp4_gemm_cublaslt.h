@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "cublaslt_kernels/include/fp4_gemm.h"
+#include "fp4_gemm.h"
 #include "tensorrt_llm/common/cudaUtils.h"
 #include "tensorrt_llm/common/logger.h"
 #include <cuda_fp4.h>
@@ -128,7 +128,20 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         // 创建矩阵描述符
         checkCudaError(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
         checkCudaError(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
-        checkCudaError(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
+        
+        // 根据输出类型创建 C 和 D 描述符
+        cudaDataType_t outputType;
+        if constexpr (std::is_same_v<T, half>) {
+            outputType = CUDA_R_16F;
+        } else if constexpr (std::is_same_v<T, float>) {
+            outputType = CUDA_R_32F;
+        } else if constexpr (std::is_same_v<T, __nv_bfloat16>) {
+            outputType = CUDA_R_16BF;
+        } else {
+            throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
+        }
+        
+        checkCudaError(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
         checkCudaError(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n));
 
         // 创建偏好设置
@@ -147,14 +160,19 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         // 执行 matmul
         float alpha = 1.0f;
         float beta = 0.0f;
+        
+        // 在 cuBLASLt FP4 GEMM 中：
+        // - C 是中间结果 (bfloat16) - 这是我们需要的最终输出
+        // - D 是最终输出 (FP4) - 我们不需要这个
+        
         checkCudaError(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
                                      A, Adesc,
                                      B, Bdesc,
                                      &beta,
-                                     D, Cdesc,
-                                     D, Ddesc,
+                                     D, Cdesc,  // 输出到 D，但使用 Cdesc 的类型 (T)
+                                     nullptr, nullptr,  // 不需要 D 输出
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,
