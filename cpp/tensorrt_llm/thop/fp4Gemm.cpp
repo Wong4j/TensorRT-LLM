@@ -341,23 +341,6 @@ private:
     at::ScalarType mOutputDtype;
     FP4GemmType mfp4GemmType;
 };
-} // namespace torch_ext
-
-TORCH_LIBRARY_FRAGMENT(trtllm, m)
-{
-    m.class_<torch_ext::FP4GemmRunner>("FP4GemmRunner")
-        .def(torch::init<at::ScalarType, int64_t>())
-        .def("run_gemm", &torch_ext::FP4GemmRunner::runGemm)
-        .def("get_num_configs", &torch_ext::FP4GemmRunner::getNumConfigs);
-
-    m.def(
-        "fp4_bmm(Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale, int fp4GemmType, "
-        "ScalarType? out_dtype=None) -> Tensor");
-    m.def(
-        "fp4_gemm(Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale, int fp4GemmType, "
-        "ScalarType? out_dtype=None) -> Tensor");
-    m.def("cublaslt_nvfp4_gemm(Tensor out, Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale) -> ()");
-}
 
 // cuBLASLt 专用函数
 void cublaslt_nvfp4_gemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
@@ -392,6 +375,45 @@ void cublaslt_nvfp4_gemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor con
         throw std::runtime_error("Unsupported output dtype for cuBLASLt FP4 GEMM");
     }
 }
+
+} // namespace torch_ext
+
+TORCH_LIBRARY_FRAGMENT(trtllm, m)
+{
+    m.class_<torch_ext::FP4GemmRunner>("FP4GemmRunner")
+        .def(torch::init<at::ScalarType, int64_t>())
+        .def("run_gemm", &torch_ext::FP4GemmRunner::runGemm)
+        .def("get_num_configs", &torch_ext::FP4GemmRunner::getNumConfigs);
+
+    m.def(
+        "fp4_bmm(Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale, int fp4GemmType, "
+        "ScalarType? out_dtype=None) -> Tensor");
+    m.def(
+        "fp4_gemm(Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale, int fp4GemmType, "
+        "ScalarType? out_dtype=None) -> Tensor");
+    m.def("cublaslt_nvfp4_gemm(Tensor out, Tensor mat1, Tensor mat2, Tensor mat1Scale, Tensor mat2Scale, Tensor globalScale) -> ()");
+}
+
+// 显式模板实例化
+template void runGemm<half>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                           at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                           at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                           int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                           FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+
+template void runGemm<float>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                            at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                            at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                            int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                            FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+
+#ifdef ENABLE_BF16
+template void runGemm<__nv_bfloat16>(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, 
+                                    at::Tensor const& mat1Scale, at::Tensor const& mat2Scale, 
+                                    at::Tensor const& globalScale, int64_t m, int64_t n, int64_t k, 
+                                    int64_t batch_count, tkc::CutlassGemmConfig const& gemmConfig, 
+                                    FP4GemmType fp4GemmType, Fp4GemmBackend backend);
+#endif
 
 TORCH_LIBRARY_IMPL(trtllm, CUDA, m)
 {
