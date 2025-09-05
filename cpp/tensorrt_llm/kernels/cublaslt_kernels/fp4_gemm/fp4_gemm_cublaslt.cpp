@@ -16,6 +16,7 @@
 
 #include "fp4_gemm_cublaslt.h"
 
+// 显式实例化模板类
 namespace tensorrt_llm
 {
 namespace kernels
@@ -23,12 +24,9 @@ namespace kernels
 namespace cublaslt_kernels
 {
 
-// 显式实例化
 template class CublasLtFp4GemmRunner<half>;
 template class CublasLtFp4GemmRunner<float>;
-#ifdef ENABLE_BF16
 template class CublasLtFp4GemmRunner<__nv_bfloat16>;
-#endif
 
 } // namespace cublaslt_kernels
 } // namespace kernels

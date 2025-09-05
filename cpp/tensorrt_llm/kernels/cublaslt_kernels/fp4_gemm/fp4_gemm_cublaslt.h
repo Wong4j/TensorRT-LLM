@@ -48,49 +48,45 @@ CublasLtFp4GemmRunner<T>::~CublasLtFp4GemmRunner()
 }
 
 template <typename T>
-void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B, 
-                                   void const* input_sf, void const* weight_sf,
-                                   float const* global_sf, int m, int n, int k, 
-                                   int batch_count, char* workspace, const size_t workspaceBytes, 
-                                   cudaStream_t stream)
+void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
+                                    void const* input_sf, void const* weight_sf,
+                                    float const* global_sf, int m, int n, int k,
+                                    int batch_count, char* workspace, const size_t workspaceBytes,
+                                    cudaStream_t stream)
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
     
     // 验证输入类型
     validateInputTypes(A, B, input_sf, weight_sf);
     
-    // 设置 cuBLASLt 流
-    checkCudaError(cublasLtSetStream(mCublasLtHandle, stream));
-    
-    // 执行 GEMM
-    executeCublasLtGemm(D, A, B, input_sf, weight_sf, global_sf, 
-                       m, n, k, workspace, workspaceBytes, stream);
+    // 执行 cuBLASLt GEMM
+    executeCublasLtGemm(D, A, B, input_sf, weight_sf, global_sf, m, n, k, workspace, workspaceBytes, stream);
 }
 
 template <typename T>
-void CublasLtFp4GemmRunner<T>::validateInputTypes(void const* A, void const* B, 
-                                                 void const* input_sf, void const* weight_sf)
+void CublasLtFp4GemmRunner<T>::validateInputTypes(void const* A, void const* B,
+                                                  void const* input_sf, void const* weight_sf)
 {
-    // 验证 A, B 必须是 __nv_fp4_e2m1 类型
-    // 验证 scale 必须是 __nv_fp8_e4m3 类型
-    // 如果不匹配则抛出异常
+    // 验证输入和权重都是 nvfp4 类型
     // 这里可以添加类型检查逻辑
     TLLM_LOG_DEBUG("Validating input types for cuBLASLt FP4 GEMM");
 }
 
 template <typename T>
-void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void const* B, 
-                                                  void const* input_sf, void const* weight_sf,
-                                                  float const* global_sf, int m, int n, int k, 
-                                                  char* workspace, const size_t workspaceBytes, cudaStream_t stream)
+void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void const* B,
+                                                   void const* input_sf, void const* weight_sf,
+                                                   float const* global_sf, int m, int n, int k,
+                                                   char* workspace, const size_t workspaceBytes, cudaStream_t stream)
 {
-    cublasLtMatmulDesc_t operationDesc = NULL;
-    cublasLtMatrixLayout_t Adesc = NULL, Bdesc = NULL, Cdesc = NULL, Ddesc = NULL;
-    cublasLtMatmulPreference_t preference = NULL;
-
+    TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
+    
+    cublasLtMatmulDesc_t operationDesc = nullptr;
+    cublasLtMatrixLayout_t Adesc = nullptr, Bdesc = nullptr, Cdesc = nullptr, Ddesc = nullptr;
+    cublasLtMatmulPreference_t preference = nullptr;
+    
     int returnedResults = 0;
     cublasLtMatmulHeuristicResult_t heuristicResult = {};
-
+    
     try
     {
         // 创建操作描述符
@@ -99,32 +95,20 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                                      &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
         checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
                                                      &CUBLAS_OP_N, sizeof(CUBLAS_OP_N)));
-
-        // 设置块缩放模式
-        auto aScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_MODE_PER_TENSOR;
-        auto bScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_MODE_PER_TENSOR;
-        auto dScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_MODE_PER_TENSOR;
-        auto dOutScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_MODE_PER_TENSOR;
-
+        
+        // 设置缩放模式
+        cublasLtMatmulMatrixScale_t scaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
         checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, 
-                                                     &aScaleMode, sizeof(aScaleMode)));
+                                                     &scaleMode, sizeof(scaleMode)));
         checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, 
-                                                     &bScaleMode, sizeof(bScaleMode)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_MODE, 
-                                                     &dScaleMode, sizeof(dScaleMode)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_MODE, 
-                                                     &dOutScaleMode, sizeof(dOutScaleMode)));
-
-        // 设置缩放因子指针
+                                                     &scaleMode, sizeof(scaleMode)));
+        
+        // 设置缩放指针
         checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
                                                      &input_sf, sizeof(input_sf)));
         checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
                                                      &weight_sf, sizeof(weight_sf)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_POINTER, 
-                                                     &global_sf, sizeof(global_sf)));
-        checkCudaError(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_POINTER, 
-                                                     &global_sf, sizeof(global_sf)));
-
+        
         // 创建矩阵描述符
         checkCudaError(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
         checkCudaError(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
@@ -140,43 +124,49 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         } else {
             throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
         }
-        
         checkCudaError(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
-        checkCudaError(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n));
-
-        // 创建偏好设置
+        checkCudaError(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n)); // D is FP4 in sample
+        
+        // 创建偏好描述符
         checkCudaError(cublasLtMatmulPreferenceCreate(&preference));
         checkCudaError(cublasLtMatmulPreferenceSetAttribute(preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES, 
                                                            &workspaceBytes, sizeof(workspaceBytes)));
-
-        // 使用 cuBLASLt heuristic 选择最佳算法
+        
+        // 获取启发式算法
         checkCudaError(cublasLtMatmulAlgoGetHeuristic(mCublasLtHandle, operationDesc, Adesc, Bdesc, Cdesc, Ddesc, 
                                                      preference, 1, &heuristicResult, &returnedResults));
-
+        
         if (returnedResults == 0) {
             throw std::runtime_error("No suitable cuBLASLt algorithm found for FP4 GEMM");
         }
-
+        
         // 执行 matmul
         float alpha = 1.0f;
         float beta = 0.0f;
         
-        // 在 cuBLASLt FP4 GEMM 中：
-        // - C 是中间结果 (bfloat16) - 这是我们需要的最终输出
-        // - D 是最终输出 (FP4) - 我们不需要这个
-        
+        // In cuBLASLt FP4 GEMM:
+        // - C is the intermediate result (bfloat16) - this is our desired final output type
+        // - D is the final output (FP4) - we don't need this for our T-typed output
         checkCudaError(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
                                      A, Adesc,
                                      B, Bdesc,
                                      &beta,
-                                     D, Cdesc,  // 输出到 D，但使用 Cdesc 的类型 (T)
-                                     nullptr, nullptr,  // 不需要 D 输出
+                                     D, Cdesc,  // Output to D (user's buffer), using Cdesc's type (T)
+                                     nullptr, nullptr,  // No D output needed
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,
                                      0));
+        
+        // 清理资源
+        if (preference) cublasLtMatmulPreferenceDestroy(preference);
+        if (Ddesc) cublasLtMatrixLayoutDestroy(Ddesc);
+        if (Cdesc) cublasLtMatrixLayoutDestroy(Cdesc);
+        if (Bdesc) cublasLtMatrixLayoutDestroy(Bdesc);
+        if (Adesc) cublasLtMatrixLayoutDestroy(Adesc);
+        if (operationDesc) cublasLtMatmulDescDestroy(operationDesc);
     }
     catch (...)
     {
@@ -189,22 +179,16 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         if (operationDesc) cublasLtMatmulDescDestroy(operationDesc);
         throw;
     }
-
-    // 清理资源
-    if (preference) cublasLtMatmulPreferenceDestroy(preference);
-    if (Ddesc) cublasLtMatrixLayoutDestroy(Ddesc);
-    if (Cdesc) cublasLtMatrixLayoutDestroy(Cdesc);
-    if (Bdesc) cublasLtMatrixLayoutDestroy(Bdesc);
-    if (Adesc) cublasLtMatrixLayoutDestroy(Adesc);
-    if (operationDesc) cublasLtMatmulDescDestroy(operationDesc);
 }
 
 template <typename T>
 size_t CublasLtFp4GemmRunner<T>::getWorkspaceSize(int const m, int const n, int const k, int batch_count)
 {
-    // 返回 cuBLASLt 所需的工作空间大小
-    // 这里可以根据 m, n, k 估算所需的工作空间
-    return 1024 * 1024; // 1MB 默认工作空间
+    TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
+    
+    // 返回 cuBLASLt 所需的 workspace 大小
+    // 这里可以根据矩阵大小估算 workspace 需求
+    return std::max(1024 * 1024, m * n * k / 4); // 简单的估算
 }
 
 } // namespace cublaslt_kernels
