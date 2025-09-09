@@ -30,22 +30,7 @@ namespace kernels
 namespace cublaslt_kernels
 {
 
-// 内联基类定义
-class CublasLtFp4GemmRunnerInterface
-{
-public:
-    virtual ~CublasLtFp4GemmRunnerInterface() = default;
-    
-    virtual void gemm(void* D, void const* A, void const* B, 
-                     void const* input_sf, void const* weight_sf,
-                     float const* global_sf, int m, int n, int k, 
-                     int batch_count, char* workspace, const size_t workspaceBytes, 
-                     cudaStream_t stream) = 0;
-                     // Note: Current implementation assumes β = 0 (no C matrix needed)
-                     // Future: D = α * A * B + β * C where C is bfloat16 matrix
-    
-    virtual size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) = 0;
-};
+// 基类定义在 fp4_gemm.h 中，这里不需要重复定义
 
 // 模板类定义
 template <typename T>
