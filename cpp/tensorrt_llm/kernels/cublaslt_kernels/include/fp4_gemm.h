@@ -19,6 +19,7 @@
 #include <cuda_runtime_api.h>
 #include <cublasLt.h>
 #include <vector>
+#include <cstddef>  // for size_t
 
 namespace tensorrt_llm
 {
@@ -27,22 +28,8 @@ namespace kernels
 namespace cublaslt_kernels
 {
 
-// cuBLASLt FP4 GEMM Runner 接口
-class CublasLtFp4GemmRunnerInterface
-{
-public:
-    virtual ~CublasLtFp4GemmRunnerInterface() = default;
-    
-    virtual void gemm(void* D, void const* A, void const* B, 
-                     void const* input_sf, void const* weight_sf,
-                     float const* global_sf, int m, int n, int k, 
-                     int batch_count, char* workspace, const size_t workspaceBytes, 
-                     cudaStream_t stream) = 0;
-    
-    virtual size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) = 0;
-};
-
 // 前向声明
+class CublasLtFp4GemmRunnerInterface;
 template <typename T>
 class CublasLtFp4GemmRunner;
 
