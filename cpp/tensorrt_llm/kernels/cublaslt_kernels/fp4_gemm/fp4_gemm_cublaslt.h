@@ -41,6 +41,8 @@ public:
                      float const* global_sf, int m, int n, int k, 
                      int batch_count, char* workspace, const size_t workspaceBytes, 
                      cudaStream_t stream) = 0;
+                     // Note: Current implementation assumes β = 0 (no C matrix needed)
+                     // Future: D = α * A * B + β * C where C is bfloat16 matrix
     
     virtual size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) = 0;
 };
@@ -68,6 +70,7 @@ private:
                             void const* input_sf, void const* weight_sf,
                             float const* global_sf, int m, int n, int k, 
                             char* workspace, const size_t workspaceBytes, cudaStream_t stream);
+                            // Note: C matrix support can be added later for D = α * A * B + β * C
     
     cublasLtHandle_t mCublasLtHandle;
     int mSm;
@@ -180,8 +183,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
             throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
         }
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Output type: " + std::to_string(outputType));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, outputType, m, n, n));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n)); // D is FP4 in sample
+        
+        // C 和 D 都使用 bfloat16 类型
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, n));
         
         // 创建偏好描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor");
@@ -205,16 +210,19 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         float beta = 0.0f;
         
         // In cuBLASLt FP4 GEMM:
-        // - C is the intermediate result (bfloat16) - this is our desired final output type
-        // - D is the final output (FP4) - we don't need this for our T-typed output
+        // - A, B: FP4 input matrices (CUDA_R_4F_E2M1)
+        // - C: intermediate result (bfloat16) - used for computation when β != 0
+        // - D: final output (bfloat16) - this is our desired output buffer
+        // Current implementation: β = 0, so C is not needed (nullptr)
+        // Future enhancement: support C matrix for D = α * A * B + β * C
         TLLM_CUDA_CHECK(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
                                      A, Adesc,
                                      B, Bdesc,
                                      &beta,
-                                     D, Cdesc,  // Output to D (user's buffer), using Cdesc's type (T)
-                                     nullptr, nullptr,  // No D output needed
+                                     nullptr, nullptr,  // No C input needed (β = 0)
+                                     D, Ddesc,  // Output to D (user's buffer), using Ddesc's type (bfloat16)
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,
