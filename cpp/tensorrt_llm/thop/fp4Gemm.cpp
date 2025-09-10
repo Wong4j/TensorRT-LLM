@@ -26,7 +26,7 @@
 #endif
 
 #ifdef ENABLE_CUBLASLT_FP4_GEMM
-#include "tensorrt_llm/kernels/cublaslt_kernels/include/fp4_gemm.h"
+#include "tensorrt_llm/kernels/cublaslt_kernels/fp4_gemm/fp4_gemm_cublaslt.h"
 #endif
 
 #include <ATen/cuda/EmptyTensor.h>
