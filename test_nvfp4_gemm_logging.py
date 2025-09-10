@@ -42,11 +42,11 @@ def test_nvfp4_gemm_logging():
     
     print(f"\nCreating test data with dimensions: m={m}, n={n}, k={k}")
     
-    # 创建 FP4 输入数据
-    act_fp4 = torch.randn(m, k // 2, dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
-    weight = torch.randn(n, k // 2, dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
+    # 创建 FP4 输入数据 - 使用 randint 生成 uint8 数据
+    act_fp4 = torch.randint(0, 255, (m, k // 2), dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
+    weight = torch.randint(0, 255, (n, k // 2), dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
     
-    # 创建缩放因子
+    # 创建缩放因子 - 使用 randn 生成浮点数
     act_sf = torch.randn(m, dtype=torch.float16, device=device)
     weight_scale = torch.randn(n, dtype=torch.float16, device=device)
     alpha = torch.tensor([1.0], dtype=torch.float32, device=device)
