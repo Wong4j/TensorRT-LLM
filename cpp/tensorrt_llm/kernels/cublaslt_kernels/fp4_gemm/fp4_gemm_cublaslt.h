@@ -155,11 +155,11 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
                                                      &transb, sizeof(transb)));
         
-        // 设置缩放模式 - 使用块缩放模式
-        cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
-        cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
-        cublasLtMatmulMatrixScale_t DScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
-        cublasLtMatmulMatrixScale_t DOutScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
+        // 设置缩放模式 - 使用标量缩放模式
+        cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        cublasLtMatmulMatrixScale_t DScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        cublasLtMatmulMatrixScale_t DOutScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
         
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, 
                                                      &AScaleMode, sizeof(AScaleMode)));
