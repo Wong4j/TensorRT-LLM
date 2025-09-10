@@ -39,8 +39,11 @@ if(ENABLE_CUBLASLT_FP4_GEMM)
     # 设置编译选项
     target_compile_options(cublaslt_fp4_gemm PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>
-        $<$<COMPILE_LANGUAGE:CXX>:-std=c++17>
+        $<$<COMPILE_LANGUAGE:CXX>:-std=c++17 -fPIC>
     )
+    
+    # 设置位置无关代码属性
+    set_property(TARGET cublaslt_fp4_gemm PROPERTY POSITION_INDEPENDENT_CODE ON)
     
     # 设置包含目录
     target_include_directories(cublaslt_fp4_gemm PUBLIC
