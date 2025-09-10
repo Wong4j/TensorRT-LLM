@@ -155,8 +155,20 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
                                                      &transb, sizeof(transb)));
         
-        // 设置缩放模式 - 使用默认的缩放模式
-        // 注意：对于 FP4 GEMM，缩放通常通过指针设置，不需要额外的模式设置
+        // 设置缩放模式 - 使用块缩放模式
+        cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
+        cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
+        cublasLtMatmulMatrixScale_t DScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
+        cublasLtMatmulMatrixScale_t DOutScaleMode = CUBLASLT_MATMUL_SCALE_ALPHA;
+        
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, 
+                                                     &AScaleMode, sizeof(AScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, 
+                                                     &BScaleMode, sizeof(BScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_MODE, 
+                                                     &DScaleMode, sizeof(DScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_MODE, 
+                                                     &DOutScaleMode, sizeof(DOutScaleMode)));
         
         // 设置缩放指针
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
@@ -166,6 +178,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         
         // 创建矩阵描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors");
+        // 对于 FP4 矩阵，步长应该是压缩后的维度
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
         

@@ -46,16 +46,21 @@ def test_nvfp4_gemm_logging():
     act_fp4 = torch.randint(0, 255, (m, k // 2), dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
     weight = torch.randint(0, 255, (n, k // 2), dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
     
-    # 创建缩放因子 - 使用 randn 生成浮点数
-    act_sf = torch.randn(m, dtype=torch.float16, device=device)
-    weight_scale = torch.randn(n, dtype=torch.float16, device=device)
+    # 创建缩放因子 - CUTLASS 期望 uint8，cuBLASLt 期望 float16
+    # 为了兼容两个后端，我们创建两种类型
+    act_sf_uint8 = torch.randint(0, 255, (m,), dtype=torch.uint8, device=device)
+    weight_scale_uint8 = torch.randint(0, 255, (n,), dtype=torch.uint8, device=device)
+    act_sf_float16 = torch.randn(m, dtype=torch.float16, device=device)
+    weight_scale_float16 = torch.randn(n, dtype=torch.float16, device=device)
     alpha = torch.tensor([1.0], dtype=torch.float32, device=device)
     
     print(f"Input shapes:")
     print(f"  act_fp4: {list(act_fp4.shape)}")
     print(f"  weight: {list(weight.shape)}")
-    print(f"  act_sf: {list(act_sf.shape)}")
-    print(f"  weight_scale: {list(weight_scale.shape)}")
+    print(f"  act_sf_uint8: {list(act_sf_uint8.shape)}")
+    print(f"  weight_scale_uint8: {list(weight_scale_uint8.shape)}")
+    print(f"  act_sf_float16: {list(act_sf_float16.shape)}")
+    print(f"  weight_scale_float16: {list(weight_scale_float16.shape)}")
     print(f"  alpha: {list(alpha.shape)}")
     
     # 测试 CUTLASS 后端
@@ -67,8 +72,8 @@ def test_nvfp4_gemm_logging():
         result_cutlass = nvfp4_gemm(
             act_fp4=act_fp4,
             weight=weight,
-            act_sf=act_sf,
-            weight_scale=weight_scale,
+            act_sf=act_sf_uint8,  # CUTLASS 期望 uint8
+            weight_scale=weight_scale_uint8,  # CUTLASS 期望 uint8
             alpha=alpha,
             output_dtype=torch.float16,
             to_userbuffers=False,
@@ -91,8 +96,8 @@ def test_nvfp4_gemm_logging():
         result_cublaslt = nvfp4_gemm(
             act_fp4=act_fp4,
             weight=weight,
-            act_sf=act_sf,
-            weight_scale=weight_scale,
+            act_sf=act_sf_float16,  # cuBLASLt 期望 float16
+            weight_scale=weight_scale_float16,  # cuBLASLt 期望 float16
             alpha=alpha,
             output_dtype=torch.float16,
             to_userbuffers=False,
