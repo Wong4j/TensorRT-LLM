@@ -39,19 +39,22 @@ def test_nvfp4_gemm_logging():
     
     # 创建测试数据
     m, n, k = 128, 256, 512
+    k_compressed = k // 2  # FP4 压缩了 k 维度
     
     print(f"\nCreating test data with dimensions: m={m}, n={n}, k={k}")
     
     # 创建 FP4 输入数据 - 使用 randint 生成 uint8 数据
-    act_fp4 = torch.randint(0, 255, (m, k // 2), dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
-    weight = torch.randint(0, 255, (n, k // 2), dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
+    act_fp4 = torch.randint(0, 255, (m, k_compressed), dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
+    weight = torch.randint(0, 255, (n, k_compressed), dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
     
-    # 创建缩放因子 - CUTLASS 期望 uint8，cuBLASLt 期望 float16
+    # 创建缩放因子 - nvfp4: 每 16 个元素共享一个缩放因子
+    # CUTLASS 期望 uint8，cuBLASLt 期望 float16
     # 为了兼容两个后端，我们创建两种类型
-    act_sf_uint8 = torch.randint(0, 255, (m,), dtype=torch.uint8, device=device)
-    weight_scale_uint8 = torch.randint(0, 255, (n,), dtype=torch.uint8, device=device)
-    act_sf_float16 = torch.randn(m, dtype=torch.float16, device=device)
-    weight_scale_float16 = torch.randn(n, dtype=torch.float16, device=device)
+    scale_groups = k_compressed // 16  # 缩放因子的组数
+    act_sf_uint8 = torch.randint(0, 255, (m, scale_groups), dtype=torch.uint8, device=device)
+    weight_scale_uint8 = torch.randint(0, 255, (n, scale_groups), dtype=torch.uint8, device=device)
+    act_sf_float16 = torch.randn(m, scale_groups, dtype=torch.float16, device=device)
+    weight_scale_float16 = torch.randn(n, scale_groups, dtype=torch.float16, device=device)
     alpha = torch.tensor([1.0], dtype=torch.float32, device=device)
     
     print(f"Input shapes:")
