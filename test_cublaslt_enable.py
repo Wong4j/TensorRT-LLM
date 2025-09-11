@@ -57,9 +57,9 @@ def test_cublaslt_backend():
         
         act_fp4 = torch.randint(0, 255, (m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
         weight = torch.randint(0, 255, (n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
-        # nvfp4: 每 16 个元素共享一个缩放因子
-        act_sf = torch.ones((m, k_compressed // 16), dtype=torch.float32, device="cuda")
-        weight_scale = torch.ones((n, k_compressed // 16), dtype=torch.float32, device="cuda")
+        # nvfp4: 每 16 个元素共享一个缩放因子，使用 fp8 (e4m3) 类型
+        act_sf = torch.ones((m, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
+        weight_scale = torch.ones((n, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
         alpha = torch.tensor(1.0, dtype=torch.float32, device="cuda")
         
         logger.info("Testing cuBLASLt backend...")

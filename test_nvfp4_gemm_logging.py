@@ -47,21 +47,22 @@ def test_nvfp4_gemm_logging():
     act_fp4 = torch.randint(0, 255, (m, k_compressed), dtype=torch.uint8, device=device)  # FP4 压缩了 k 维度
     weight = torch.randint(0, 255, (n, k_compressed), dtype=torch.uint8, device=device)   # FP4 压缩了 k 维度
     
-    # 创建缩放因子 - nvfp4: 每 16 个元素共享一个缩放因子
-    # CUTLASS 期望 uint8，cuBLASLt 期望 float16
+    # 创建缩放因子 - nvfp4: 每 16 个元素共享一个缩放因子，使用 fp8 (e4m3) 类型
+    # CUTLASS 期望 fp8，cuBLASLt 期望 fp8
     # 为了兼容两个后端，我们创建两种类型
     scale_groups = k_compressed // 16  # 缩放因子的组数
-    act_sf_uint8 = torch.randint(0, 255, (m, scale_groups), dtype=torch.uint8, device=device)
-    weight_scale_uint8 = torch.randint(0, 255, (n, scale_groups), dtype=torch.uint8, device=device)
-    act_sf_float16 = torch.randn(m, scale_groups, dtype=torch.float16, device=device)
-    weight_scale_float16 = torch.randn(n, scale_groups, dtype=torch.float16, device=device)
+    act_sf_fp8 = torch.ones((m, scale_groups), dtype=torch.float8_e4m3fn, device=device)
+    weight_scale_fp8 = torch.ones((n, scale_groups), dtype=torch.float8_e4m3fn, device=device)
+    # 为了测试，也创建 float16 版本（如果后端需要）
+    act_sf_float16 = torch.ones((m, scale_groups), dtype=torch.float16, device=device)
+    weight_scale_float16 = torch.ones((n, scale_groups), dtype=torch.float16, device=device)
     alpha = torch.tensor([1.0], dtype=torch.float32, device=device)
     
     print(f"Input shapes:")
     print(f"  act_fp4: {list(act_fp4.shape)}")
     print(f"  weight: {list(weight.shape)}")
-    print(f"  act_sf_uint8: {list(act_sf_uint8.shape)}")
-    print(f"  weight_scale_uint8: {list(weight_scale_uint8.shape)}")
+    print(f"  act_sf_fp8: {list(act_sf_fp8.shape)}")
+    print(f"  weight_scale_fp8: {list(weight_scale_fp8.shape)}")
     print(f"  act_sf_float16: {list(act_sf_float16.shape)}")
     print(f"  weight_scale_float16: {list(weight_scale_float16.shape)}")
     print(f"  alpha: {list(alpha.shape)}")
@@ -75,8 +76,8 @@ def test_nvfp4_gemm_logging():
         result_cutlass = nvfp4_gemm(
             act_fp4=act_fp4,
             weight=weight,
-            act_sf=act_sf_uint8,  # CUTLASS 期望 uint8
-            weight_scale=weight_scale_uint8,  # CUTLASS 期望 uint8
+            act_sf=act_sf_fp8,  # CUTLASS 期望 fp8
+            weight_scale=weight_scale_fp8,  # CUTLASS 期望 fp8
             alpha=alpha,
             output_dtype=torch.float16,
             to_userbuffers=False,
@@ -99,8 +100,8 @@ def test_nvfp4_gemm_logging():
         result_cublaslt = nvfp4_gemm(
             act_fp4=act_fp4,
             weight=weight,
-            act_sf=act_sf_float16,  # cuBLASLt 期望 float16
-            weight_scale=weight_scale_float16,  # cuBLASLt 期望 float16
+            act_sf=act_sf_fp8,  # cuBLASLt 期望 fp8
+            weight_scale=weight_scale_fp8,  # cuBLASLt 期望 fp8
             alpha=alpha,
             output_dtype=torch.float16,
             to_userbuffers=False,
