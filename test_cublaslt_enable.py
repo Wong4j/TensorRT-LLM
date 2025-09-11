@@ -43,6 +43,48 @@ def test_compile_time_flags():
         logger.error(f"❌ Error importing FP4 utils: {e}")
         return False
 
+def test_cutlass_backend():
+    """测试 CUTLASS 后端是否可用"""
+    logger.info("Testing CUTLASS backend...")
+    
+    try:
+        from tensorrt_llm._torch.custom_ops import nvfp4_gemm
+        import tensorrt_llm.quantization.utils.fp4_utils as fp4_utils
+        
+        # 创建测试数据
+        m, n, k = 64, 128, 256
+        k_compressed = k // 2  # FP4 压缩了 K 维度
+        
+        act_fp4 = torch.randint(0, 255, (m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
+        weight = torch.randint(0, 255, (n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
+        # nvfp4: 每 16 个元素共享一个缩放因子，使用 fp8 (e4m3) 类型
+        act_sf = torch.ones((m, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
+        weight_scale = torch.ones((n, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
+        alpha = torch.tensor(1.0, dtype=torch.float32, device="cuda")
+        
+        logger.info("Testing CUTLASS backend...")
+        try:
+            result = nvfp4_gemm(
+                act_fp4=act_fp4,
+                weight=weight,
+                act_sf=act_sf,
+                weight_scale=weight_scale,
+                alpha=alpha,
+                output_dtype=torch.bfloat16,
+                to_userbuffers=False,
+                backend="cutlass"
+            )
+            logger.info("✅ CUTLASS backend test successful")
+            logger.info(f"Output shape: {list(result.shape)}, dtype: {result.dtype}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ CUTLASS backend test failed: {e}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"❌ Error testing CUTLASS backend: {e}")
+        return False
+
 def test_cublaslt_backend():
     """测试 cuBLASLt 后端是否可用"""
     logger.info("Testing cuBLASLt backend...")
@@ -85,10 +127,113 @@ def test_cublaslt_backend():
         logger.error(f"❌ Error testing cuBLASLt backend: {e}")
         return False
 
+def test_backend_comparison():
+    """对比测试 CUTLASS 和 cuBLASLt 两个后端"""
+    logger.info("Comparing CUTLASS and cuBLASLt backends...")
+    
+    try:
+        from tensorrt_llm._torch.custom_ops import nvfp4_gemm
+        import tensorrt_llm.quantization.utils.fp4_utils as fp4_utils
+        import time
+        
+        # 创建测试数据
+        m, n, k = 128, 256, 512
+        k_compressed = k // 2  # FP4 压缩了 K 维度
+        
+        act_fp4 = torch.randint(0, 255, (m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
+        weight = torch.randint(0, 255, (n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device="cuda")
+        act_sf = torch.ones((m, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
+        weight_scale = torch.ones((n, k_compressed // 16), dtype=torch.float8_e4m3fn, device="cuda")
+        alpha = torch.tensor(1.0, dtype=torch.float32, device="cuda")
+        
+        results = {}
+        
+        # 测试 CUTLASS 后端
+        logger.info("Testing CUTLASS backend...")
+        try:
+            start_time = time.time()
+            result_cutlass = nvfp4_gemm(
+                act_fp4=act_fp4,
+                weight=weight,
+                act_sf=act_sf,
+                weight_scale=weight_scale,
+                alpha=alpha,
+                output_dtype=torch.bfloat16,
+                to_userbuffers=False,
+                backend="cutlass"
+            )
+            cutlass_time = time.time() - start_time
+            results['cutlass'] = {
+                'success': True,
+                'shape': list(result_cutlass.shape),
+                'dtype': result_cutlass.dtype,
+                'time': cutlass_time
+            }
+            logger.info(f"✅ CUTLASS: shape={list(result_cutlass.shape)}, dtype={result_cutlass.dtype}, time={cutlass_time:.4f}s")
+        except Exception as e:
+            results['cutlass'] = {'success': False, 'error': str(e)}
+            logger.error(f"❌ CUTLASS failed: {e}")
+        
+        # 测试 cuBLASLt 后端
+        logger.info("Testing cuBLASLt backend...")
+        try:
+            start_time = time.time()
+            result_cublaslt = nvfp4_gemm(
+                act_fp4=act_fp4,
+                weight=weight,
+                act_sf=act_sf,
+                weight_scale=weight_scale,
+                alpha=alpha,
+                output_dtype=torch.bfloat16,
+                to_userbuffers=False,
+                backend="cublaslt"
+            )
+            cublaslt_time = time.time() - start_time
+            results['cublaslt'] = {
+                'success': True,
+                'shape': list(result_cublaslt.shape),
+                'dtype': result_cublaslt.dtype,
+                'time': cublaslt_time
+            }
+            logger.info(f"✅ cuBLASLt: shape={list(result_cublaslt.shape)}, dtype={result_cublaslt.dtype}, time={cublaslt_time:.4f}s")
+        except Exception as e:
+            results['cublaslt'] = {'success': False, 'error': str(e)}
+            logger.error(f"❌ cuBLASLt failed: {e}")
+        
+        # 对比结果
+        logger.info("=" * 50)
+        logger.info("Backend Comparison Results:")
+        logger.info("=" * 50)
+        
+        for backend, result in results.items():
+            if result['success']:
+                logger.info(f"{backend.upper()}: ✅ Success")
+                logger.info(f"  Shape: {result['shape']}")
+                logger.info(f"  Dtype: {result['dtype']}")
+                logger.info(f"  Time:  {result['time']:.4f}s")
+            else:
+                logger.info(f"{backend.upper()}: ❌ Failed - {result['error']}")
+        
+        # 如果两个后端都成功，比较性能
+        if results['cutlass']['success'] and results['cublaslt']['success']:
+            cutlass_time = results['cutlass']['time']
+            cublaslt_time = results['cublaslt']['time']
+            speedup = cutlass_time / cublaslt_time if cublaslt_time > 0 else float('inf')
+            logger.info(f"Performance comparison:")
+            logger.info(f"  CUTLASS time:    {cutlass_time:.4f}s")
+            logger.info(f"  cuBLASLt time:   {cublaslt_time:.4f}s")
+            logger.info(f"  Speedup ratio:   {speedup:.2f}x")
+        
+        return results['cutlass']['success'] and results['cublaslt']['success']
+        
+    except Exception as e:
+        logger.error(f"❌ Error in backend comparison: {e}")
+        return False
+
 def main():
     """主测试函数"""
     logger.info("=" * 60)
-    logger.info("cuBLASLt FP4 GEMM 启用测试")
+    logger.info("FP4 GEMM 后端对比测试")
     logger.info("=" * 60)
     
     # 测试编译时标志
@@ -97,20 +242,28 @@ def main():
     # 测试操作可用性
     ops_ok = test_cublaslt_fp4_gemm_enabled()
     
-    # 测试后端功能
-    backend_ok = test_cublaslt_backend()
+    # 测试 CUTLASS 后端
+    cutlass_ok = test_cutlass_backend()
+    
+    # 测试 cuBLASLt 后端
+    cublaslt_ok = test_cublaslt_backend()
+    
+    # 对比测试两个后端
+    comparison_ok = test_backend_comparison()
     
     logger.info("=" * 60)
     logger.info("测试结果总结:")
     logger.info(f"编译时标志: {'✅ 通过' if compile_ok else '❌ 失败'}")
     logger.info(f"操作可用性: {'✅ 通过' if ops_ok else '❌ 失败'}")
-    logger.info(f"后端功能: {'✅ 通过' if backend_ok else '❌ 失败'}")
+    logger.info(f"CUTLASS 后端: {'✅ 通过' if cutlass_ok else '❌ 失败'}")
+    logger.info(f"cuBLASLt 后端: {'✅ 通过' if cublaslt_ok else '❌ 失败'}")
+    logger.info(f"后端对比: {'✅ 通过' if comparison_ok else '❌ 失败'}")
     
-    if compile_ok and ops_ok and backend_ok:
-        logger.info("🎉 cuBLASLt FP4 GEMM 已成功启用！")
+    if compile_ok and ops_ok and cutlass_ok and cublaslt_ok and comparison_ok:
+        logger.info("🎉 所有测试通过！CUTLASS 和 cuBLASLt 两个后端都可用！")
         return True
     else:
-        logger.error("💥 cuBLASLt FP4 GEMM 启用失败，请检查编译配置")
+        logger.error("💥 部分测试失败，请检查配置")
         return False
 
 if __name__ == "__main__":
