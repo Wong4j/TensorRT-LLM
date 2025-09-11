@@ -28,8 +28,11 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     data = {
         'act_fp4': torch.randint(0, 255, (m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
         'weight': torch.randint(0, 255, (n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
-        'act_sf': torch.ones((m, scale_groups), dtype=torch.float8_e4m3fn, device=device),
-        'weight_scale': torch.ones((n, scale_groups), dtype=torch.float8_e4m3fn, device=device),
+        # 为不同后端创建不同数据类型的缩放因子
+        'act_sf_uint8': torch.ones((m, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
+        'weight_scale_uint8': torch.ones((n, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
+        'act_sf_fp8': torch.ones((m, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # cuBLASLt
+        'weight_scale_fp8': torch.ones((n, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # cuBLASLt
         'alpha': torch.tensor(1.0, dtype=torch.float32, device=device)
     }
     
@@ -42,13 +45,21 @@ def benchmark_backend(backend: str, data: Dict[str, torch.Tensor],
     
     logger.info(f"Benchmarking {backend.upper()} backend...")
     
+    # 根据后端选择正确的缩放因子类型
+    if backend == "cutlass":
+        act_sf = data['act_sf_uint8']
+        weight_scale = data['weight_scale_uint8']
+    else:  # cublaslt
+        act_sf = data['act_sf_fp8']
+        weight_scale = data['weight_scale_fp8']
+    
     # 预热
     try:
         _ = nvfp4_gemm(
             act_fp4=data['act_fp4'],
             weight=data['weight'],
-            act_sf=data['act_sf'],
-            weight_scale=data['weight_scale'],
+            act_sf=act_sf,
+            weight_scale=weight_scale,
             alpha=data['alpha'],
             output_dtype=output_dtype,
             to_userbuffers=False,
@@ -69,8 +80,8 @@ def benchmark_backend(backend: str, data: Dict[str, torch.Tensor],
             result = nvfp4_gemm(
                 act_fp4=data['act_fp4'],
                 weight=data['weight'],
-                act_sf=data['act_sf'],
-                weight_scale=data['weight_scale'],
+                act_sf=act_sf,
+                weight_scale=weight_scale,
                 alpha=data['alpha'],
                 output_dtype=output_dtype,
                 to_userbuffers=False,
