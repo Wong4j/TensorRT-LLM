@@ -66,6 +66,9 @@ def benchmark_backend(backend: str, data: Dict[str, torch.Tensor],
             backend=backend
         )
     except Exception as e:
+        logger.error(f"Error in {backend} backend warmup: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return {'success': False, 'error': str(e)}
     
     # 基准测试
@@ -95,6 +98,9 @@ def benchmark_backend(backend: str, data: Dict[str, torch.Tensor],
             results.append(result)
             
         except Exception as e:
+            logger.error(f"Error in {backend} backend: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return {'success': False, 'error': str(e)}
     
     # 计算统计信息

@@ -80,6 +80,8 @@ def test_cutlass_backend():
             return True
         except Exception as e:
             logger.error(f"❌ CUTLASS backend test failed: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return False
             
     except Exception as e:
@@ -123,6 +125,8 @@ def test_cublaslt_backend():
             return True
         except Exception as e:
             logger.error(f"❌ cuBLASLt backend test failed: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return False
             
     except Exception as e:
