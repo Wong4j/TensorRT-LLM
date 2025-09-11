@@ -195,9 +195,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         }
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Output type: " + std::to_string(outputType));
         
-        // C 和 D 都使用 bfloat16 类型
+        // C 使用 bfloat16 类型，D 使用 FP4 类型（根据 cuBLASLt 样本）
+        // 注意：D 矩阵在 cuBLASLt 内部使用 FP4，但我们会将结果转换到用户指定的类型
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_4F_E2M1, m, n, n));
         
         // 创建偏好描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor");
@@ -222,10 +223,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         
         // In cuBLASLt FP4 GEMM:
         // - A, B: FP4 input matrices (CUDA_R_4F_E2M1)
-        // - C: intermediate result (bfloat16) - used for computation when β != 0
-        // - D: final output (bfloat16) - this is our desired output buffer
-        // Current implementation: β = 0, so C is not needed (nullptr)
-        // Future enhancement: support C matrix for D = α * A * B + β * C
+        // - C: output result (bfloat16) - this is our desired output buffer
+        // - D: internal FP4 representation (not used for output)
+        // Current implementation: β = 0, so no C input needed
+        // Output directly to C matrix (bfloat16) which is the user's buffer
         TLLM_CUDA_CHECK(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
@@ -233,7 +234,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                      B, Bdesc,
                                      &beta,
                                      nullptr, nullptr,  // No C input needed (β = 0)
-                                     D, Ddesc,  // Output to D (user's buffer), using Ddesc's type (bfloat16)
+                                     D, Cdesc,  // Output to D buffer but using Cdesc (bfloat16) layout
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,
