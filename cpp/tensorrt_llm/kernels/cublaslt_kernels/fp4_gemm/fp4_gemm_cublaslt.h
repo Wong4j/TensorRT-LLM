@@ -148,21 +148,30 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         // 创建操作描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor");
         TLLM_CUDA_CHECK(cublasLtMatmulDescCreate(&operationDesc, CUBLAS_COMPUTE_32F, CUDA_R_32F));
-        cublasOperation_t transa = CUBLAS_OP_N;
+        cublasOperation_t transa = CUBLAS_OP_T;
         cublasOperation_t transb = CUBLAS_OP_N;
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSA, 
                                                      &transa, sizeof(transa)));
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
                                                      &transb, sizeof(transb)));
         
-        // 设置缩放模式 - 只对 A 和 B 矩阵设置缩放（D 矩阵使用 bfloat16，不需要缩放）
-        cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
-        cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        // 设置缩放模式 - 根据 cuBLASLt 样本设置所有矩阵的缩放模式
+        cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_VEC16_UE4M3;
+        cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_VEC16_UE4M3;
+        cublasLtMatmulMatrixScale_t CScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        cublasLtMatmulMatrixScale_t DScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
+        cublasLtMatmulMatrixScale_t DOutScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
         
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_MODE, 
                                                      &AScaleMode, sizeof(AScaleMode)));
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_MODE, 
                                                      &BScaleMode, sizeof(BScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_C_SCALE_MODE, 
+                                                     &CScaleMode, sizeof(CScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_MODE, 
+                                                     &DScaleMode, sizeof(DScaleMode)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_MODE, 
+                                                     &DOutScaleMode, sizeof(DOutScaleMode)));
         
         // 设置缩放指针
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
@@ -170,30 +179,25 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
                                                      &weight_sf, sizeof(weight_sf)));
         
-        // D 矩阵使用 bfloat16，不需要设置缩放指针
+        // 为 C 和 D 矩阵设置缩放指针（根据 cuBLASLt 样本需要）
+        // 注意：这里我们使用 nullptr，因为当前实现不需要 C 和 D 矩阵的缩放
+        const void* c_scale_ptr = nullptr;
+        const void* d_scale_ptr = nullptr;
+        const void* d_out_scale_ptr = nullptr;
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_C_SCALE_POINTER, 
+                                                     &c_scale_ptr, sizeof(c_scale_ptr)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_SCALE_POINTER, 
+                                                     &d_scale_ptr, sizeof(d_scale_ptr)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_POINTER, 
+                                                     &d_out_scale_ptr, sizeof(d_out_scale_ptr)));
         
         // 创建矩阵描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors");
         // 对于 FP4 矩阵，步长应该是压缩后的维度
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, m, k, k));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, k, m, k));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, k));
         
-        // 根据输出类型创建 C 和 D 描述符
-        cudaDataType_t outputType;
-        if constexpr (std::is_same_v<T, half>) {
-            outputType = CUDA_R_16F;
-        } else if constexpr (std::is_same_v<T, float>) {
-            outputType = CUDA_R_32F;
-        } else if constexpr (std::is_same_v<T, __nv_bfloat16>) {
-            outputType = CUDA_R_16BF;
-        } else {
-            throw std::runtime_error("Unsupported output type for cuBLASLt FP4 GEMM");
-        }
-        TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Output type: " + std::to_string(outputType));
         
-        // 根据用户要求配置矩阵描述符
-        // C 矩阵：输出矩阵，使用 bfloat16 类型
-        // D 矩阵：输出矩阵，使用 bfloat16 类型（不需要 scale）
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, n));
         
@@ -218,10 +222,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         float alpha = 1.0f;
         float beta = 0.0f;
         
-        // In cuBLASLt FP4 GEMM:
+        // In cuBLASLt FP4 GEMM (根据样本):
         // - A, B: FP4 input matrices (CUDA_R_4F_E2M1)
         // - C: output matrix (bfloat16) - 这是用户期望的输出
-        // - D: output matrix (bfloat16) - 也是用户期望的输出
+        // - D: internal FP4 representation (cuBLASLt 内部使用)
         // Current implementation: β = 0, so no C input needed
         // Output to C matrix (bfloat16) which is the user's buffer
         TLLM_CUDA_CHECK(cublasLtMatmul(mCublasLtHandle,
@@ -230,8 +234,8 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                      A, Adesc,
                                      B, Bdesc,
                                      &beta,
-                                     nullptr, nullptr,  // No C input needed (β = 0)
-                                     D, Cdesc,  // Output to D buffer using Cdesc (bfloat16) layout
+                                     nullptr, Cdesc,  // No C input needed (β = 0)
+                                     D, Ddesc,  // Output to D buffer using Cdesc (bfloat16) layout
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,
