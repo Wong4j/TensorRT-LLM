@@ -2,7 +2,7 @@
 
 import torch
 import tensorrt_llm
-from tensorrt_llm._torch import fp4_utils
+from tensorrt_llm.quantization.utils import fp4_utils
 import logging
 
 # 设置日志
