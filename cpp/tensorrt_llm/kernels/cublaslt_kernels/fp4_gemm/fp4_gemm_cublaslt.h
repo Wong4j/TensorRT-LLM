@@ -200,16 +200,14 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         const void* weight_sf_ptr = weight_sf;
         
         if (input_sf_is_uint8) {
-            // 输入是uint8类型，cuBLASLt期望float8_e4m3fn
-            // 这里需要正确的类型转换，而不是简单的reinterpret_cast
-            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Converting uint8 scaling factors to float8_e4m3fn");
-            // TODO: 这里需要实现正确的uint8到float8_e4m3fn转换
-            // 目前使用reinterpret_cast作为临时方案，但这是不正确的
-            input_sf_ptr = reinterpret_cast<const void*>(input_sf);
-            weight_sf_ptr = reinterpret_cast<const void*>(weight_sf);
+            // 输入是uint8类型，cuBLASLt期望__nv_fp8_e4m3类型
+            // 由于bit pattern相同，可以直接reinterpret_cast为正确的类型
+            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Converting uint8 scaling factors to __nv_fp8_e4m3");
+            input_sf_ptr = reinterpret_cast<const __nv_fp8_e4m3*>(input_sf);
+            weight_sf_ptr = reinterpret_cast<const __nv_fp8_e4m3*>(weight_sf);
         } else {
-            // 输入已经是float8_e4m3fn类型，直接使用
-            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Using float8_e4m3fn scaling factors directly");
+            // 输入已经是__nv_fp8_e4m3类型，直接使用
+            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Using __nv_fp8_e4m3 scaling factors directly");
             input_sf_ptr = input_sf;
             weight_sf_ptr = weight_sf;
         }
