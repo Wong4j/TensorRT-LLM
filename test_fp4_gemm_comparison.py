@@ -28,10 +28,10 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     # 设置随机种子以确保可重复性
     torch.manual_seed(42)
     
-    # 创建随机输入数据 - 使用非常保守的范围确保 FP4 格式有效
-    # 使用离散的小数值，避免浮点精度问题
-    act_fp4_data = torch.randint(-2, 3, (m, k_compressed), device=device).float() * 0.01  # 范围 [-0.02, 0.02]
-    weight_data = torch.randint(-2, 3, (n, k_compressed), device=device).float() * 0.01   # 范围 [-0.02, 0.02]
+    # 创建随机输入数据 - 使用适中的范围确保 FP4 格式有效且有非零输出
+    # 使用离散的整数值，避免浮点精度问题
+    act_fp4_data = torch.randint(-10, 11, (m, k_compressed), device=device).float() * 0.1  # 范围 [-1.0, 1.0]
+    weight_data = torch.randint(-10, 11, (n, k_compressed), device=device).float() * 0.1   # 范围 [-1.0, 1.0]
     
     # 转换为 FP4 格式
     act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
