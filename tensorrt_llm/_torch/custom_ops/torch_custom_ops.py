@@ -479,6 +479,7 @@ def nvfp4_gemm(
     
     if backend == "cublaslt":
         # 直接调用 cuBLASLt 实现，使用内置 heuristic，跳过 tuner
+        # 注意：cuBLASLt 现在使用与 CUTLASS 相同的 scaling factor 类型
         result = cublaslt_nvfp4_gemm_impl(
             act_fp4, weight, act_sf, weight_scale, alpha, 
             output_dtype, to_userbuffers

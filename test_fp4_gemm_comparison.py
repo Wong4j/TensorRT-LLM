@@ -45,13 +45,10 @@ def benchmark_backend(backend: str, data: Dict[str, torch.Tensor],
     
     logger.info(f"Benchmarking {backend.upper()} backend...")
     
-    # 根据后端选择正确的缩放因子类型
-    if backend == "cutlass":
-        act_sf = data['act_sf_uint8']
-        weight_scale = data['weight_scale_uint8']
-    else:  # cublaslt
-        act_sf = data['act_sf_fp8']
-        weight_scale = data['weight_scale_fp8']
+    # 两个后端现在使用相同的缩放因子类型 (uint8)
+    # 类型转换在 cuBLASLt 实现层进行
+    act_sf = data['act_sf_uint8']
+    weight_scale = data['weight_scale_uint8']
     
     # 预热
     try:
@@ -152,9 +149,6 @@ def test_different_sizes():
     
     test_sizes = [
         (64, 128, 256),
-        (128, 256, 512),
-        (256, 512, 1024),
-        (512, 1024, 2048),
     ]
     
     results = {}

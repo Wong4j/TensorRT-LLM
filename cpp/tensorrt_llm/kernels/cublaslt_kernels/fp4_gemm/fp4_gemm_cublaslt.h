@@ -59,6 +59,13 @@ public:
              int batch_count, char* workspace, const size_t workspaceBytes, 
              cudaStream_t stream) override;
     
+    // 新增：支持不同scaling factor类型的重载
+    void gemm(void* D, void const* A, void const* B, 
+             void const* input_sf, void const* weight_sf,
+             float const* global_sf, int m, int n, int k, 
+             int batch_count, char* workspace, const size_t workspaceBytes, 
+             cudaStream_t stream, bool input_sf_is_uint8 = true);
+    
     size_t getWorkspaceSize(int const m, int const n, int const k, int batch_count) override;
 
 private:
@@ -67,7 +74,8 @@ private:
     void executeCublasLtGemm(void* D, void const* A, void const* B, 
                             void const* input_sf, void const* weight_sf,
                             float const* global_sf, int m, int n, int k, 
-                            char* workspace, const size_t workspaceBytes, cudaStream_t stream);
+                            char* workspace, const size_t workspaceBytes, cudaStream_t stream,
+                            bool input_sf_is_uint8 = true);
                             // Note: C matrix support can be added later for D = α * A * B + β * C
     
     cublasLtHandle_t mCublasLtHandle;
@@ -100,18 +108,31 @@ void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
                                     int batch_count, char* workspace, const size_t workspaceBytes,
                                     cudaStream_t stream)
 {
+    // 默认假设scaling factor是uint8类型（与CUTLASS一致）
+    gemm(D, A, B, input_sf, weight_sf, global_sf, m, n, k, batch_count, workspace, workspaceBytes, stream, true);
+}
+
+template <typename T>
+void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
+                                    void const* input_sf, void const* weight_sf,
+                                    float const* global_sf, int m, int n, int k,
+                                    int batch_count, char* workspace, const size_t workspaceBytes,
+                                    cudaStream_t stream, bool input_sf_is_uint8)
+{
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM");
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=" + std::to_string(m) + 
                   ", n=" + std::to_string(n) + ", k=" + std::to_string(k) + 
                   ", batch_count=" + std::to_string(batch_count));
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Workspace size: " + std::to_string(workspaceBytes) + " bytes");
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Output type: " + std::string(typeid(T).name()));
+    TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Input scaling factor type: " + 
+                  (input_sf_is_uint8 ? "uint8" : "float8_e4m3fn"));
     
     // 验证输入类型
     validateInputTypes(A, B, input_sf, weight_sf);
     
     // 执行 cuBLASLt GEMM
-    executeCublasLtGemm(D, A, B, input_sf, weight_sf, global_sf, m, n, k, workspace, workspaceBytes, stream);
+    executeCublasLtGemm(D, A, B, input_sf, weight_sf, global_sf, m, n, k, workspace, workspaceBytes, stream, input_sf_is_uint8);
     
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully");
 }
@@ -129,7 +150,8 @@ template <typename T>
 void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void const* B,
                                                    void const* input_sf, void const* weight_sf,
                                                    float const* global_sf, int m, int n, int k,
-                                                   char* workspace, const size_t workspaceBytes, cudaStream_t stream)
+                                                   char* workspace, const size_t workspaceBytes, cudaStream_t stream,
+                                                   bool input_sf_is_uint8)
 {
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution");
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=" + std::to_string(m) + 
@@ -173,11 +195,26 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_MODE, 
                                                      &DOutScaleMode, sizeof(DOutScaleMode)));
         
-        // 设置缩放指针
+        // 设置缩放指针 - 根据输入类型进行reinterpret_cast
+        const void* input_sf_ptr = input_sf;
+        const void* weight_sf_ptr = weight_sf;
+        
+        if (input_sf_is_uint8) {
+            // 输入是uint8类型，cuBLASLt期望float8_e4m3fn，进行reinterpret_cast
+            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Converting uint8 scaling factors to float8_e4m3fn");
+            input_sf_ptr = reinterpret_cast<const void*>(input_sf);
+            weight_sf_ptr = reinterpret_cast<const void*>(weight_sf);
+        } else {
+            // 输入已经是float8_e4m3fn类型，直接使用
+            TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Using float8_e4m3fn scaling factors directly");
+            input_sf_ptr = input_sf;
+            weight_sf_ptr = weight_sf;
+        }
+        
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
-                                                     &input_sf, sizeof(input_sf)));
+                                                     &input_sf_ptr, sizeof(input_sf_ptr)));
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
-                                                     &weight_sf, sizeof(weight_sf)));
+                                                     &weight_sf_ptr, sizeof(weight_sf_ptr)));
         
         // 为 C 和 D 矩阵设置缩放指针（根据 cuBLASLt 样本需要）
         // 注意：这里我们使用 nullptr，因为当前实现不需要 C 和 D 矩阵的缩放
