@@ -19,8 +19,11 @@ print(f"Compressed k: {k_compressed}, scale_groups: {scale_groups}")
 # 创建完全相同的输入数据
 act_fp4 = torch.ones((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
 weight = torch.ones((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
-act_sf = torch.ones((m, scale_groups), dtype=torch.uint8, device='cuda')
-weight_scale = torch.ones((n, scale_groups), dtype=torch.uint8, device='cuda')
+
+# 设置 scaling factor 为 E4M3 格式的值 1 (bit pattern: 0x70)
+e4m3_one = 0x70  # E4M3 格式的 1.0
+act_sf = torch.full((m, scale_groups), e4m3_one, dtype=torch.uint8, device='cuda')
+weight_scale = torch.full((n, scale_groups), e4m3_one, dtype=torch.uint8, device='cuda')
 alpha = torch.tensor(1.0, dtype=torch.float32, device='cuda')
 
 print(f"Input shapes:")
@@ -80,5 +83,9 @@ print(f"\nCUTLASS has NaN: {torch.isnan(cutlass_result).any()}")
 print(f"cuBLASLt has NaN: {torch.isnan(cublaslt_result).any()}")
 print(f"CUTLASS has Inf: {torch.isinf(cutlass_result).any()}")
 print(f"cuBLASLt has Inf: {torch.isinf(cublaslt_result).any()}")
+
+for i in range(10):
+    print(f"CUTLASS output: {cutlass_result[i]}")
+    print(f"cuBLASLt output: {cublaslt_result[i]}")
 
 print("\n=== Test Complete ===")
