@@ -22,7 +22,7 @@ def test_scaling_factor_conversion():
     
     # 创建测试数据
     device = "cuda"
-    m, n, k = 4, 4, 8  # 小矩阵便于分析
+    m, n, k = 64, 128, 256  # 使用与之前测试相同的尺寸
     k_compressed = k // 2
     scale_groups = k_compressed // 16
     
