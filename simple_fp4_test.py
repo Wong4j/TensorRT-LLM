@@ -16,14 +16,27 @@ scale_groups = k_compressed // 16
 print(f"Matrix size: m={m}, n={n}, k={k}")
 print(f"Compressed k: {k_compressed}, scale_groups: {scale_groups}")
 
-# 创建完全相同的输入数据
-act_fp4 = torch.ones((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
-weight = torch.ones((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
+# 设置随机种子以确保可重复性
+torch.manual_seed(42)
 
-# 设置 scaling factor 为 E4M3 格式的值 1 (bit pattern: 0x70)
+# 创建随机输入数据
+print("Creating random test data...")
+act_fp4_data = torch.randn((m, k_compressed), device='cuda') * 0.5  # 范围 [-0.5, 0.5]
+weight_data = torch.randn((n, k_compressed), device='cuda') * 0.3   # 范围 [-0.3, 0.3]
+
+# 转换为 FP4 格式
+act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
+weight = weight_data.to(fp4_utils.FLOAT4_E2M1X2)
+
+# 创建合理的缩放因子 (E4M3 格式的 1.0 = 0x70)
 e4m3_one = 0x70  # E4M3 格式的 1.0
-act_sf = torch.full((m, scale_groups), e4m3_one, dtype=torch.uint8, device='cuda')
-weight_scale = torch.full((n, scale_groups), e4m3_one, dtype=torch.uint8, device='cuda')
+# 添加一些随机变化，但保持在合理范围内
+scale_variation = torch.randn((m, scale_groups), device='cuda') * 0.1 + 1.0  # 范围 [0.9, 1.1]
+act_sf = (scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
+
+weight_scale_variation = torch.randn((n, scale_groups), device='cuda') * 0.1 + 1.0  # 范围 [0.9, 1.1]
+weight_scale = (weight_scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
+
 alpha = torch.tensor(1.0, dtype=torch.float32, device='cuda')
 
 print(f"Input shapes:")

@@ -1,0 +1,1753 @@
+2025-09-13 13:40:19,283 - __main__ - INFO - ================================================================================
+2025-09-13 13:40:19,283 - __main__ - INFO - FP4 GEMM 后端对比测试
+2025-09-13 13:40:19,283 - __main__ - INFO - ================================================================================
+2025-09-13 13:40:22,207 - __main__ - INFO - ============================================================
+2025-09-13 13:40:22,207 - __main__ - INFO - Testing different matrix sizes
+2025-09-13 13:40:22,207 - __main__ - INFO - ============================================================
+2025-09-13 13:40:22,207 - __main__ - INFO - 
+Testing size: m=64, n=128, k=256
+2025-09-13 13:40:26,134 - numexpr.utils - INFO - Note: detected 224 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+2025-09-13 13:40:26,134 - numexpr.utils - INFO - Note: NumExpr detected 224 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+2025-09-13 13:40:26,134 - numexpr.utils - INFO - NumExpr defaulting to 16 threads.
+2025-09-13 13:40:26,885 - datasets - INFO - PyTorch version 2.8.0a0+5228986c39.nv25.6 available.
+2025-09-13 13:40:26,885 - datasets - INFO - Polars version 1.25.2 available.
+/usr/local/lib/python3.12/dist-packages/modelopt/torch/__init__.py:36: UserWarning: transformers version 4.55.0 is incompatible with nvidia-modelopt and may cause issues. Please install recommended version with `pip install nvidia-modelopt[hf]` if working with HF models.
+  _warnings.warn(
+2025-09-13 13:40:28,973 - INFO - flashinfer.jit: Prebuilt kernels not found, using JIT backend
+[TensorRT-LLM] TensorRT-LLM version: 1.1.0rc4
+2025-09-13 13:40:29,568 - __main__ - INFO - Benchmarking CUTLASS backend...
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,569 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,584 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,585 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[64, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[128, 128], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[64, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[128, 8], dtype=torch.uint8
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=64, n=128, k=256, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[64, 128], dtype=torch.bfloat16
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,586 - __main__ - INFO - Benchmarking CUBLASLT backend...
+2025-09-13 13:40:29,586 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,587 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,614 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [64, 128], weight: [128, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [64, 8], weight_scale: [128, 8]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [64, 128]
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [64, 128], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,615 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [128, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [64, 128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [64, 128]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [64]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [64, 128]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=128, n=64, k=256, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=128, n=64, k=256
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 1048576 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,616 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,616 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [64, 128], dtype: torch.bfloat16
+2025-09-13 13:40:29,616 - __main__ - INFO - CUTLASS:    0.0003s ± 0.0000s
+2025-09-13 13:40:29,616 - __main__ - INFO - cuBLASLt:   0.0004s ± 0.0001s
+2025-09-13 13:40:29,616 - __main__ - INFO - Speedup:    0.82x
+2025-09-13 13:40:29,659 - __main__ - INFO - Max abs diff: 0.000000
+2025-09-13 13:40:29,659 - __main__ - INFO - Max rel diff: 0.000000
+2025-09-13 13:40:29,659 - __main__ - INFO - Within tolerance: True
+2025-09-13 13:40:29,668 - __main__ - INFO - CUTLASS output range: [8.000000, 8.000000]
+2025-09-13 13:40:29,668 - __main__ - INFO - cuBLASLt output range: [8.000000, 8.000000]
+2025-09-13 13:40:29,668 - __main__ - INFO - CUTLASS output mean: 8.000000
+2025-09-13 13:40:29,668 - __main__ - INFO - cuBLASLt output mean: 8.000000
+2025-09-13 13:40:29,693 - __main__ - INFO - CUTLASS has NaN: False, has Inf: False
+2025-09-13 13:40:29,693 - __main__ - INFO - cuBLASLt has NaN: False, has Inf: False
+2025-09-13 13:40:29,693 - __main__ - INFO - ============================================================
+2025-09-13 13:40:29,693 - __main__ - INFO - Testing different output data types
+2025-09-13 13:40:29,693 - __main__ - INFO - ============================================================
+2025-09-13 13:40:29,693 - __main__ - INFO - 
+Testing output dtype: torch.float16
+2025-09-13 13:40:29,693 - __main__ - INFO - Benchmarking CUTLASS backend...
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,694 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,700 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float16
+2025-09-13 13:40:29,700 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float16
+2025-09-13 13:40:29,701 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,701 - __main__ - INFO - Benchmarking CUBLASLT backend...
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float16, device: cuda:0
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 5
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using half precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 6__half
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float16, device: cuda:0
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 5
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using half precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 6__half
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,702 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float16, device: cuda:0
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 5
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using half precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 6__half
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float16, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float16, device: cuda:0
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 5
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using half precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 6__half
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 6__half
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float16
+2025-09-13 13:40:29,703 - __main__ - INFO - CUTLASS:    0.0003s
+2025-09-13 13:40:29,703 - __main__ - INFO - cuBLASLt:   0.0003s
+2025-09-13 13:40:29,703 - __main__ - INFO - Output shape: [128, 256]
+2025-09-13 13:40:29,703 - __main__ - INFO - Output dtype: torch.float16
+2025-09-13 13:40:29,703 - __main__ - INFO - 
+Testing output dtype: torch.bfloat16
+2025-09-13 13:40:29,703 - __main__ - INFO - Benchmarking CUTLASS backend...
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.bfloat16
+2025-09-13 13:40:29,703 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.bfloat16
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.bfloat16
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,704 - __main__ - INFO - Benchmarking CUBLASLT backend...
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,704 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,705 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.bfloat16, to_userbuffers: False
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.bfloat16, device: cuda:0
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 15
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using bfloat16 precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: 13__nv_bfloat16
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.bfloat16
+2025-09-13 13:40:29,706 - __main__ - INFO - CUTLASS:    0.0003s
+2025-09-13 13:40:29,706 - __main__ - INFO - cuBLASLt:   0.0003s
+2025-09-13 13:40:29,706 - __main__ - INFO - Output shape: [128, 256]
+2025-09-13 13:40:29,706 - __main__ - INFO - Output dtype: torch.bfloat16
+2025-09-13 13:40:29,706 - __main__ - INFO - 
+Testing output dtype: torch.float32
+2025-09-13 13:40:29,706 - __main__ - INFO - Benchmarking CUTLASS backend...
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,706 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float32
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float32
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float32
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float32
+2025-09-13 13:40:29,713 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cutlass
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM inputs:
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1 (act_fp4): shape=[128, 256], dtype=torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2 (weight): shape=[256, 256], dtype=torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat1_scale: shape=[128, 16], dtype=torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   mat2_scale: shape=[256, 16], dtype=torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   global_scale: shape=[], dtype=torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   tactic: -1, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward]   fp4_gemm_type: 0, output_dtype: torch.float32
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: CUTLASS
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [runGemm] Using CUTLASS backend for FP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] FP4 GEMM type: 0
+[TensorRT-LLM][INFO] [runGemm] GEMM dimensions: m=128, n=256, k=512, batch_count=1
+[TensorRT-LLM][INFO] [runGemm] Using W4A4_NVFP4_NVFP4 CUTLASS runner
+[TensorRT-LLM][INFO] [runGemm] CUTLASS workspace size: 0 bytes
+[TensorRT-LLM][INFO] [runGemm] Executing CUTLASS W4A4_NVFP4_NVFP4 GEMM
+[TensorRT-LLM][INFO] [runGemm] CUTLASS W4A4_NVFP4_NVFP4 GEMM completed
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [FP4GemmRunner::forward] CUTLASS FP4 GEMM output: shape=[128, 256], dtype=torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] CUTLASS output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,714 - __main__ - INFO - Benchmarking CUBLASLT backend...
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float32, device: cuda:0
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using float precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: f
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float32, device: cuda:0
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using float precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: f
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,714 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float32, device: cuda:0
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using float precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: f
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Backend: cublaslt
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input shapes - act_fp4: [128, 256], weight: [256, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Input dtypes - act_fp4: torch.uint8, weight: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale shapes - act_sf: [128, 16], weight_scale: [256, 16]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Scale dtypes - act_sf: torch.uint8, weight_scale: torch.uint8
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Alpha shape: [], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Output dtype: torch.float32, to_userbuffers: False
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: [128, 256]
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Created output tensor - shape: [128, 256], dtype: torch.float32, device: cuda:0
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 (act_fp4): [256, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 (weight): [128, 256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Input tensor dtypes:
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2 dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat1Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   mat2Scale dtype: 0
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   globalScale dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm]   output dtype: 6
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] Using float precision template
+[TensorRT-LLM][INFO] [runGemm] Starting FP4 GEMM execution
+[TensorRT-LLM][INFO] [runGemm] Backend: cuBLASLt
+[TensorRT-LLM][INFO] [runGemm] Output type: f
+[TensorRT-LLM][INFO] [runGemm] Input tensor shapes:
+[TensorRT-LLM][INFO] [runGemm]   mat1: [256, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat2: [128, 256]
+[TensorRT-LLM][INFO] [runGemm]   mat1Scale: [256]
+[TensorRT-LLM][INFO] [runGemm]   mat2Scale: [128]
+[TensorRT-LLM][INFO] [runGemm]   globalScale: [0]
+[TensorRT-LLM][INFO] [runGemm]   output: [128, 256]
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Starting cuBLASLt FP4 GEMM
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] GEMM dimensions: m=256, n=128, k=512, batch_count=1
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Workspace size: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Output type: f
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] Input scaling factor type: uint8
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Starting cuBLASLt execution
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Matrix dimensions: m=256, n=128, k=512
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Workspace: 4194304 bytes
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating operation descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Getting heuristic algorithm
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Found 1 suitable algorithms
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] Executing cuBLASLt matmul
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::executeCublasLtGemm] cuBLASLt matmul completed successfully
+[TensorRT-LLM][INFO] [CublasLtFp4GemmRunner::gemm] cuBLASLt FP4 GEMM completed successfully
+[TensorRT-LLM][INFO] [cublaslt_nvfp4_gemm] GEMM computation completed successfully
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,715 - tensorrt_llm._torch.custom_ops.torch_custom_ops - INFO - [nvfp4_gemm] cuBLASLt output shape: [128, 256], dtype: torch.float32
+2025-09-13 13:40:29,715 - __main__ - INFO - CUTLASS:    0.0003s
+2025-09-13 13:40:29,715 - __main__ - INFO - cuBLASLt:   0.0003s
+2025-09-13 13:40:29,715 - __main__ - INFO - Output shape: [128, 256]
+2025-09-13 13:40:29,715 - __main__ - INFO - Output dtype: torch.float32
+2025-09-13 13:40:29,715 - __main__ - INFO - ================================================================================
+2025-09-13 13:40:29,715 - __main__ - INFO - 测试完成！
+2025-09-13 13:40:29,715 - __main__ - INFO - ================================================================================

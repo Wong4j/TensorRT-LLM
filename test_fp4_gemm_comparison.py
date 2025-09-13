@@ -25,15 +25,35 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     # 导入 FP4 工具
     import tensorrt_llm.quantization.utils.fp4_utils as fp4_utils
     
+    # 设置随机种子以确保可重复性
+    torch.manual_seed(42)
+    
+    # 创建随机输入数据
+    # 对于 FP4 数据，使用合理的随机范围
+    act_fp4_data = torch.randn((m, k_compressed), device=device) * 0.5  # 范围 [-0.5, 0.5]
+    weight_data = torch.randn((n, k_compressed), device=device) * 0.3   # 范围 [-0.3, 0.3]
+    
+    # 转换为 FP4 格式
+    act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
+    weight = weight_data.to(fp4_utils.FLOAT4_E2M1X2)
+    
+    # 创建合理的缩放因子 (E4M3 格式的 1.0 = 0x70)
+    e4m3_one = 0x70  # E4M3 格式的 1.0
+    # 添加一些随机变化，但保持在合理范围内
+    scale_variation = torch.randn((m, scale_groups), device=device) * 0.1 + 1.0  # 范围 [0.9, 1.1]
+    act_sf_values = (scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
+    
+    weight_scale_variation = torch.randn((n, scale_groups), device=device) * 0.1 + 1.0  # 范围 [0.9, 1.1]
+    weight_scale_values = (weight_scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
+    
     data = {
-        # 使用全为1的矩阵进行测试，便于发现数值问题
-        'act_fp4': torch.ones((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
-        'weight': torch.ones((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
-        # 为不同后端创建不同数据类型的缩放因子
-        'act_sf_uint8': torch.ones((m, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
-        'weight_scale_uint8': torch.ones((n, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
-        'act_sf_fp8': torch.ones((m, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # cuBLASLt
-        'weight_scale_fp8': torch.ones((n, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # cuBLASLt
+        'act_fp4': act_fp4,
+        'weight': weight,
+        # 使用相同的缩放因子类型 (uint8) 给两个后端
+        'act_sf_uint8': act_sf_values,
+        'weight_scale_uint8': weight_scale_values,
+        'act_sf_fp8': torch.ones((m, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # 保留用于兼容性
+        'weight_scale_fp8': torch.ones((n, scale_groups), dtype=torch.float8_e4m3fn, device=device),  # 保留用于兼容性
         'alpha': torch.tensor(1.0, dtype=torch.float32, device=device)
     }
     
@@ -149,7 +169,11 @@ def test_different_sizes():
     logger.info("=" * 60)
     
     test_sizes = [
-        (64, 128, 256),
+        (64, 128, 256),    # 小尺寸
+        (128, 256, 512),   # 中等尺寸
+        (256, 512, 1024),  # 较大尺寸
+        (512, 1024, 2048), # 大尺寸
+        (1024, 2048, 4096), # 很大尺寸
     ]
     
     results = {}
