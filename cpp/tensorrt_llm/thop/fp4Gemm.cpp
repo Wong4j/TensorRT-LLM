@@ -129,7 +129,7 @@ void runGemm(at::Tensor& out, at::Tensor const& mat1, at::Tensor const& mat2, at
                        mat1Scale.const_data_ptr(), mat2Scale.const_data_ptr(), 
                        globalScale.data_ptr<float>(), m, n, k, batch_count,
                        reinterpret_cast<char*>(workspace.data_ptr()), wsBytes, 
-                       at::cuda::getCurrentCUDAStream(mat1.get_device()));
+                       at::cuda::getCurrentCUDAStream(mat1.get_device()), true);
 #else
         throw std::runtime_error("cuBLASLt FP4 GEMM support not enabled");
 #endif
