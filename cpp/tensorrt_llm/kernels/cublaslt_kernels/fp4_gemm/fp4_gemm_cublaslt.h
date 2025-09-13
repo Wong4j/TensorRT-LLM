@@ -238,8 +238,8 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, k));  // B: weight [k, n]
         
         
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, m));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, m));
         
         // 创建偏好描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor");
@@ -275,7 +275,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
                                      B, Bdesc,  // B: weight [k, n] - Python 端已交换顺序
                                      &beta,
                                      nullptr, Cdesc,  // No C input needed (β = 0)
-                                     D, Ddesc,  // Output to D buffer using Cdesc (bfloat16) layout
+                                     D, Ddesc,  // Output to D buffer using Ddesc (bfloat16) layout
                                      &heuristicResult.algo,
                                      workspace,
                                      workspaceBytes,

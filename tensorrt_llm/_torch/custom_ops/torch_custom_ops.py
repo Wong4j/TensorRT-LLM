@@ -538,6 +538,7 @@ def cublaslt_nvfp4_gemm_impl(
         raise ValueError(f"Expected weight dtype {fp4_utils.FLOAT4_E2M1X2}, got {weight.dtype}")
     
     # 创建输出张量
+    # 保持与 CUTLASS 一致的输出形状 [m, n]
     output_shape = [act_fp4.size(0), weight.size(0)]
     logger.info(f"[cublaslt_nvfp4_gemm_impl] Creating output tensor with shape: {output_shape}")
     
