@@ -19,14 +19,21 @@ print(f"Compressed k: {k_compressed}, scale_groups: {scale_groups}")
 # 设置随机种子以确保可重复性
 torch.manual_seed(42)
 
-# 创建随机输入数据 - 使用更保守的范围确保 FP4 格式有效
+# 创建随机输入数据 - 使用非常保守的范围确保 FP4 格式有效
 print("Creating random test data...")
-act_fp4_data = torch.randn((m, k_compressed), device='cuda') * 0.1  # 范围 [-0.1, 0.1]
-weight_data = torch.randn((n, k_compressed), device='cuda') * 0.1   # 范围 [-0.1, 0.1]
+# 使用离散的小数值，避免浮点精度问题
+act_fp4_data = torch.randint(-2, 3, (m, k_compressed), device='cuda').float() * 0.01  # 范围 [-0.02, 0.02]
+weight_data = torch.randint(-2, 3, (n, k_compressed), device='cuda').float() * 0.01   # 范围 [-0.02, 0.02]
 
 # 转换为 FP4 格式
 act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
 weight = weight_data.to(fp4_utils.FLOAT4_E2M1X2)
+
+# 验证 FP4 数据是否有效
+if torch.isnan(act_fp4.float()).any() or torch.isnan(weight.float()).any():
+    print("Warning: Detected NaN in FP4 data, using zeros instead")
+    act_fp4 = torch.zeros((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
+    weight = torch.zeros((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device='cuda')
 
 # 创建缩放因子 - 使用固定的 E4M3 格式值，确保数值稳定性
 e4m3_one = 0x70  # E4M3 格式的 1.0

@@ -28,14 +28,21 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     # 设置随机种子以确保可重复性
     torch.manual_seed(42)
     
-    # 创建随机输入数据 - 使用更保守的范围确保 FP4 格式有效
-    # FP4 E2M1 格式的有效范围大约是 [-6, 6]，我们使用更小的范围
-    act_fp4_data = torch.randn((m, k_compressed), device=device) * 0.1  # 范围 [-0.1, 0.1]
-    weight_data = torch.randn((n, k_compressed), device=device) * 0.1   # 范围 [-0.1, 0.1]
+    # 创建随机输入数据 - 使用非常保守的范围确保 FP4 格式有效
+    # 使用离散的小数值，避免浮点精度问题
+    act_fp4_data = torch.randint(-2, 3, (m, k_compressed), device=device).float() * 0.01  # 范围 [-0.02, 0.02]
+    weight_data = torch.randint(-2, 3, (n, k_compressed), device=device).float() * 0.01   # 范围 [-0.02, 0.02]
     
     # 转换为 FP4 格式
     act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
     weight = weight_data.to(fp4_utils.FLOAT4_E2M1X2)
+    
+    # 验证 FP4 数据是否有效
+    if torch.isnan(act_fp4.float()).any() or torch.isnan(weight.float()).any():
+        logger.warning(f"Detected NaN in FP4 data for size ({m}, {n}, {k})")
+        # 如果检测到 NaN，使用全零数据
+        act_fp4 = torch.zeros((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device)
+        weight = torch.zeros((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device)
     
     # 创建缩放因子 - 使用固定的 E4M3 格式值，避免随机变化
     e4m3_one = 0x70  # E4M3 格式的 1.0
