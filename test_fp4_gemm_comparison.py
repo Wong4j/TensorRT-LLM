@@ -26,8 +26,9 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     import tensorrt_llm.quantization.utils.fp4_utils as fp4_utils
     
     data = {
-        'act_fp4': torch.randint(0, 255, (m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
-        'weight': torch.randint(0, 255, (n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
+        # 使用全为1的矩阵进行测试，便于发现数值问题
+        'act_fp4': torch.ones((m, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
+        'weight': torch.ones((n, k_compressed), dtype=fp4_utils.FLOAT4_E2M1X2, device=device),
         # 为不同后端创建不同数据类型的缩放因子
         'act_sf_uint8': torch.ones((m, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
         'weight_scale_uint8': torch.ones((n, scale_groups), dtype=torch.uint8, device=device),  # CUTLASS
@@ -185,6 +186,24 @@ def test_different_sizes():
                 logger.info(f"Max abs diff: {comparison['max_abs_diff']:.6f}")
                 logger.info(f"Max rel diff: {comparison['max_rel_diff']:.6f}")
                 logger.info(f"Within tolerance: {comparison['within_tolerance']}")
+                
+                # 添加详细的数值分析
+                cutlass_output = cutlass_result['results'][0]
+                cublaslt_output = cublaslt_result['results'][0]
+                
+                logger.info(f"CUTLASS output range: [{torch.min(cutlass_output):.6f}, {torch.max(cutlass_output):.6f}]")
+                logger.info(f"cuBLASLt output range: [{torch.min(cublaslt_output):.6f}, {torch.max(cublaslt_output):.6f}]")
+                logger.info(f"CUTLASS output mean: {torch.mean(cutlass_output):.6f}")
+                logger.info(f"cuBLASLt output mean: {torch.mean(cublaslt_output):.6f}")
+                
+                # 检查是否有NaN或Inf
+                cutlass_has_nan = torch.isnan(cutlass_output).any()
+                cublaslt_has_nan = torch.isnan(cublaslt_output).any()
+                cutlass_has_inf = torch.isinf(cutlass_output).any()
+                cublaslt_has_inf = torch.isinf(cublaslt_output).any()
+                
+                logger.info(f"CUTLASS has NaN: {cutlass_has_nan}, has Inf: {cutlass_has_inf}")
+                logger.info(f"cuBLASLt has NaN: {cublaslt_has_nan}, has Inf: {cublaslt_has_inf}")
         else:
             logger.error(f"CUTLASS success: {cutlass_result['success']}")
             logger.error(f"cuBLASLt success: {cublaslt_result['success']}")
