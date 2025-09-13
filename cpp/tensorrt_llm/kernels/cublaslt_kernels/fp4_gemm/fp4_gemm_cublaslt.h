@@ -231,9 +231,10 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         
         // 创建矩阵描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors");
-        // 对于 FP4 矩阵，步长应该是压缩后的维度
-        // 注意：Python 端已经交换了输入顺序，所以这里保持原始顺序
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, k, m, k));  // A: act_fp4 [k, m]
+        // 根据转置操作创建正确的矩阵描述符：
+        // - transa = CUBLAS_OP_T, 所以 A 是 [k, m] (转置后的 [m, k])
+        // - transb = CUBLAS_OP_N, 所以 B 是 [k, n]
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, k, m, k));  // A: act_fp4 [k, m] (转置)
         TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, k));  // B: weight [k, n]
         
         
