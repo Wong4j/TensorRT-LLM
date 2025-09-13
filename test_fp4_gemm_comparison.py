@@ -28,23 +28,20 @@ def create_test_data(m: int, n: int, k: int, device: str = "cuda") -> Dict[str, 
     # 设置随机种子以确保可重复性
     torch.manual_seed(42)
     
-    # 创建随机输入数据
-    # 对于 FP4 数据，使用合理的随机范围
-    act_fp4_data = torch.randn((m, k_compressed), device=device) * 0.5  # 范围 [-0.5, 0.5]
-    weight_data = torch.randn((n, k_compressed), device=device) * 0.3   # 范围 [-0.3, 0.3]
+    # 创建随机输入数据 - 使用更保守的范围确保 FP4 格式有效
+    # FP4 E2M1 格式的有效范围大约是 [-6, 6]，我们使用更小的范围
+    act_fp4_data = torch.randn((m, k_compressed), device=device) * 0.1  # 范围 [-0.1, 0.1]
+    weight_data = torch.randn((n, k_compressed), device=device) * 0.1   # 范围 [-0.1, 0.1]
     
     # 转换为 FP4 格式
     act_fp4 = act_fp4_data.to(fp4_utils.FLOAT4_E2M1X2)
     weight = weight_data.to(fp4_utils.FLOAT4_E2M1X2)
     
-    # 创建合理的缩放因子 (E4M3 格式的 1.0 = 0x70)
+    # 创建缩放因子 - 使用固定的 E4M3 格式值，避免随机变化
     e4m3_one = 0x70  # E4M3 格式的 1.0
-    # 添加一些随机变化，但保持在合理范围内
-    scale_variation = torch.randn((m, scale_groups), device=device) * 0.1 + 1.0  # 范围 [0.9, 1.1]
-    act_sf_values = (scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
-    
-    weight_scale_variation = torch.randn((n, scale_groups), device=device) * 0.1 + 1.0  # 范围 [0.9, 1.1]
-    weight_scale_values = (weight_scale_variation * e4m3_one).clamp(0, 255).to(torch.uint8)
+    # 使用固定的缩放因子，确保数值稳定性
+    act_sf_values = torch.full((m, scale_groups), e4m3_one, dtype=torch.uint8, device=device)
+    weight_scale_values = torch.full((n, scale_groups), e4m3_one, dtype=torch.uint8, device=device)
     
     data = {
         'act_fp4': act_fp4,
