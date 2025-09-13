@@ -212,9 +212,13 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
             weight_sf_ptr = weight_sf;
         }
         
-        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
-                                                     &input_sf_ptr, sizeof(input_sf_ptr)));
+        //TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
+        //                                             &input_sf_ptr, sizeof(input_sf_ptr)));
+        //TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
+        //                                             &weight_sf_ptr, sizeof(weight_sf_ptr)));
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_B_SCALE_POINTER, 
+                                                     &input_sf_ptr, sizeof(input_sf_ptr)));
+        TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_A_SCALE_POINTER, 
                                                      &weight_sf_ptr, sizeof(weight_sf_ptr)));
         
         // 为 C 和 D 矩阵设置缩放指针（根据 cuBLASLt 样本需要）
@@ -232,12 +236,12 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         // 创建矩阵描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating matrix descriptors");
         // 对于 FP4 矩阵，步长应该是压缩后的维度
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, k, m, k));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, k, n, k));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Adesc, CUDA_R_4F_E2M1, n, k, k));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Bdesc, CUDA_R_4F_E2M1, m, k, k));
         
         
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, m, n, n));
-        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, m, n, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Cdesc, CUDA_R_16BF, n, m, n));
+        TLLM_CUDA_CHECK(cublasLtMatrixLayoutCreate(&Ddesc, CUDA_R_16BF, n, m, n));
         
         // 创建偏好描述符
         TLLM_LOG_INFO("[CublasLtFp4GemmRunner::executeCublasLtGemm] Creating preference descriptor");
@@ -269,8 +273,8 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmul(mCublasLtHandle,
                                      operationDesc,
                                      &alpha,
-                                     A, Adesc,
-                                     B, Bdesc,
+                                     B, Adesc,
+                                     A, Bdesc,
                                      &beta,
                                      nullptr, Cdesc,  // No C input needed (β = 0)
                                      D, Ddesc,  // Output to D buffer using Cdesc (bfloat16) layout
