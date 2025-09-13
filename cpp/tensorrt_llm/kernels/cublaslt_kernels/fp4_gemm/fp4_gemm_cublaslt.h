@@ -177,7 +177,7 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_TRANSB, 
                                                      &transb, sizeof(transb)));
         
-        // 设置缩放模式 - 根据 cuBLASLt 样本设置所有矩阵的缩放模式
+        // 设置缩放模式 - cuBLASLt需要使用e4m3格式的scaling factor
         cublasLtMatmulMatrixScale_t AScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_VEC16_UE4M3;
         cublasLtMatmulMatrixScale_t BScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_VEC16_UE4M3;
         cublasLtMatmulMatrixScale_t CScaleMode = CUBLASLT_MATMUL_MATRIX_SCALE_SCALAR_32F;
@@ -195,13 +195,13 @@ void CublasLtFp4GemmRunner<T>::executeCublasLtGemm(void* D, void const* A, void 
         TLLM_CUDA_CHECK(cublasLtMatmulDescSetAttribute(operationDesc, CUBLASLT_MATMUL_DESC_D_OUT_SCALE_MODE, 
                                                      &DOutScaleMode, sizeof(DOutScaleMode)));
         
-        // 设置缩放指针 - 根据输入类型进行reinterpret_cast
+        // 设置缩放指针 - cuBLASLt期望e4m3格式的scaling factor
         const void* input_sf_ptr = input_sf;
         const void* weight_sf_ptr = weight_sf;
         
         if (input_sf_is_uint8) {
             // 输入是uint8类型，cuBLASLt期望float8_e4m3fn
-            // 注意：这里需要正确的类型转换，而不是简单的reinterpret_cast
+            // 这里需要正确的类型转换，而不是简单的reinterpret_cast
             TLLM_LOG_DEBUG("[CublasLtFp4GemmRunner::executeCublasLtGemm] Converting uint8 scaling factors to float8_e4m3fn");
             // TODO: 这里需要实现正确的uint8到float8_e4m3fn转换
             // 目前使用reinterpret_cast作为临时方案，但这是不正确的
