@@ -173,11 +173,9 @@ def test_different_sizes():
     logger.info("=" * 60)
     
     test_sizes = [
-        (64, 128, 256),    # 小尺寸
-        (128, 256, 512),   # 中等尺寸
-        (256, 512, 1024),  # 较大尺寸
-        (512, 1024, 2048), # 大尺寸
-        (1024, 2048, 4096), # 很大尺寸
+        (1024, 1024, 1024),   # 中等尺寸
+        (2048, 2048, 2048), # 大尺寸
+        (4096, 4096, 4096), # 很大尺寸
     ]
     
     results = {}
@@ -211,18 +209,18 @@ def test_different_sizes():
                 cublaslt_result['results'][0]
             )
             if 'error' not in comparison:
-                logger.info(f"Max abs diff: {comparison['max_abs_diff']:.6f}")
-                logger.info(f"Max rel diff: {comparison['max_rel_diff']:.6f}")
+                logger.info(f"Max abs diff: {comparison['max_abs_diff']:.20f}")
+                logger.info(f"Max rel diff: {comparison['max_rel_diff']:.20f}")
                 logger.info(f"Within tolerance: {comparison['within_tolerance']}")
                 
                 # 添加详细的数值分析
                 cutlass_output = cutlass_result['results'][0]
                 cublaslt_output = cublaslt_result['results'][0]
                 
-                logger.info(f"CUTLASS output range: [{torch.min(cutlass_output):.6f}, {torch.max(cutlass_output):.6f}]")
-                logger.info(f"cuBLASLt output range: [{torch.min(cublaslt_output):.6f}, {torch.max(cublaslt_output):.6f}]")
-                logger.info(f"CUTLASS output mean: {torch.mean(cutlass_output):.6f}")
-                logger.info(f"cuBLASLt output mean: {torch.mean(cublaslt_output):.6f}")
+                logger.info(f"CUTLASS output range: [{torch.min(cutlass_output):.20f}, {torch.max(cutlass_output):.20f}]")
+                logger.info(f"cuBLASLt output range: [{torch.min(cublaslt_output):.20f}, {torch.max(cublaslt_output):.20f}]")
+                logger.info(f"CUTLASS output mean: {torch.mean(cutlass_output):.20f}")
+                logger.info(f"cuBLASLt output mean: {torch.mean(cublaslt_output):.20f}")
                 
                 # 检查是否有NaN或Inf
                 cutlass_has_nan = torch.isnan(cutlass_output).any()
