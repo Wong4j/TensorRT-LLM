@@ -126,7 +126,7 @@ void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Workspace size: " + std::to_string(workspaceBytes) + " bytes");
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Output type: " + std::string(typeid(T).name()));
     TLLM_LOG_INFO("[CublasLtFp4GemmRunner::gemm] Input scaling factor type: " + 
-                  (input_sf_is_uint8 ? "uint8" : "float8_e4m3fn"));
+                  std::string(input_sf_is_uint8 ? "uint8" : "float8_e4m3fn"));
     
     // 验证输入类型
     validateInputTypes(A, B, input_sf, weight_sf);
