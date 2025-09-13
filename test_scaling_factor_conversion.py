@@ -34,10 +34,30 @@ def test_scaling_factor_conversion():
     weight = torch.ones((n, k_compressed), dtype=torch.uint8, device=device)
     
     # 测试不同的scaling factor值
-    test_values = [1, 2, 4, 8, 16, 32, 64, 128, 255]
+    # 使用float8_e4m3fn格式的bit位表示
+    # 1.0 = 0x70 (0111 0000)
+    # 2.0 = 0x78 (0111 1000) 
+    # 0.5 = 0x68 (0110 1000)
+    # 0.25 = 0x60 (0110 0000)
+    # 0.125 = 0x58 (0101 1000)
+    test_values = [0x70, 0x78, 0x68, 0x60, 0x58, 0x50, 0x48, 0x40, 0x38]
+    
+    # 定义float8_e4m3fn bit位到浮点数值的映射
+    fp8_values = {
+        0x70: 1.0,    # 0111 0000
+        0x78: 2.0,    # 0111 1000
+        0x68: 0.5,    # 0110 1000
+        0x60: 0.25,   # 0110 0000
+        0x58: 0.125,  # 0101 1000
+        0x50: 0.0625, # 0101 0000
+        0x48: 0.03125,# 0100 1000
+        0x40: 0.015625,# 0100 0000
+        0x38: 0.0078125 # 0011 1000
+    }
     
     for val in test_values:
-        logger.info(f"\n--- Testing scaling factor value: {val} ---")
+        fp8_val = fp8_values.get(val, "unknown")
+        logger.info(f"\n--- Testing scaling factor value: 0x{val:02x} ({fp8_val}) ---")
         
         # 创建scaling factor
         act_sf = torch.full((m, scale_groups), val, dtype=torch.uint8, device=device)
@@ -45,7 +65,7 @@ def test_scaling_factor_conversion():
         alpha = torch.tensor(1.0, dtype=torch.float32, device=device)
         
         logger.info(f"act_sf shape: {list(act_sf.shape)}, dtype: {act_sf.dtype}")
-        logger.info(f"act_sf values: {act_sf[0, :]}")
+        logger.info(f"act_sf values (hex): {[hex(x) for x in act_sf[0, :].cpu().numpy()]}")
         
         # 测试CUTLASS
         try:
