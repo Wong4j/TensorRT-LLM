@@ -550,9 +550,12 @@ def cublaslt_nvfp4_gemm_impl(
     logger.info(f"[cublaslt_nvfp4_gemm_impl] Created output tensor - shape: {list(out.shape)}, dtype: {out.dtype}, device: {out.device}")
     
     # 调用 C++ cuBLASLt 实现（使用内置 heuristic）
-    logger.info(f"[cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation...")
+    # 交换输入顺序以匹配 cuBLASLt 的 column-major 格式：
+    # - 将 gemm(act_fp4, weight) 改为 gemm(weight, act_fp4)
+    # - 这样 cuBLASLt 的输出就是正确的 row-major 格式
+    logger.info(f"[cublaslt_nvfp4_gemm_impl] Calling C++ cuBLASLt implementation with swapped inputs...")
     torch.ops.trtllm.cublaslt_nvfp4_gemm(
-        out, act_fp4, weight, act_sf, weight_scale, alpha
+        out, weight, act_fp4, weight_scale, act_sf, alpha  # 交换了 act_fp4 和 weight 的位置
     )
     
     logger.info(f"[cublaslt_nvfp4_gemm_impl] C++ cuBLASLt call completed. Output shape: {list(out.shape)}, dtype: {out.dtype}")
