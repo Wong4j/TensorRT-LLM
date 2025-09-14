@@ -108,6 +108,21 @@ print(f"\nAllclose (rtol=1e-5, atol=1e-8): {allclose_result}")
 print(f"Strict allclose (rtol=1e-6, atol=1e-9): {strict_allclose}")
 print(f"Equal elements: {equal_count}/{total_count} ({equal_percentage:.2f}%)")
 
+# 使用 assert allclose 进行严格检查
+try:
+    torch.testing.assert_close(
+        cutlass_result, 
+        cublaslt_result, 
+        rtol=1e-5, 
+        atol=1e-8,
+        msg="Backend comparison failed"
+    )
+    print("✅ Backend comparison PASSED with torch.testing.assert_close")
+except AssertionError as e:
+    print(f"❌ Backend comparison FAILED with torch.testing.assert_close: {e}")
+    # 可以选择是否抛出异常
+    # raise e  # 取消注释以在失败时停止测试
+
 # 检查是否有 NaN 或 Inf
 print(f"\nCUTLASS has NaN: {torch.isnan(cutlass_result).any()}")
 print(f"cuBLASLt has NaN: {torch.isnan(cublaslt_result).any()}")

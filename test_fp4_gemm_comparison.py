@@ -235,10 +235,27 @@ def test_different_sizes():
                 logger.info(f"Strict allclose (rtol=1e-6, atol=1e-9): {comparison['strict_allclose']}")
                 logger.info(f"Equal elements: {comparison['equal_elements']}/{comparison['total_elements']} ({comparison['equal_percentage']:.2f}%)")
                 
-                # 添加详细的数值分析
-                cutlass_output = cutlass_result['results'][0]
-                cublaslt_output = cublaslt_result['results'][0]
+                # 使用 assert allclose 进行严格检查
+                try:
+                    cutlass_output = cutlass_result['results'][0]
+                    cublaslt_output = cublaslt_result['results'][0]
+                    
+                    # 使用 torch.testing.assert_close 进行更严格的比较
+                    torch.testing.assert_close(
+                        cutlass_output, 
+                        cublaslt_output, 
+                        rtol=1e-5, 
+                        atol=1e-8,
+                        msg=f"Backend comparison failed for size ({m}, {n}, {k})"
+                    )
+                    logger.info("✅ Backend comparison PASSED with torch.testing.assert_close")
+                    
+                except AssertionError as e:
+                    logger.error(f"❌ Backend comparison FAILED with torch.testing.assert_close: {e}")
+                    # 可以选择是否继续测试或抛出异常
+                    # raise e  # 取消注释以在失败时停止测试
                 
+                # 添加详细的数值分析
                 logger.info(f"CUTLASS output range: [{torch.min(cutlass_output):.20f}, {torch.max(cutlass_output):.20f}]")
                 logger.info(f"cuBLASLt output range: [{torch.min(cublaslt_output):.20f}, {torch.max(cublaslt_output):.20f}]")
                 logger.info(f"CUTLASS output mean: {torch.mean(cutlass_output):.20f}")
