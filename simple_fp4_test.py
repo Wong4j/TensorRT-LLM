@@ -95,6 +95,19 @@ print(f"Max relative difference: {torch.max(rel_diff):.6f}")
 print(f"Mean absolute difference: {torch.mean(abs_diff):.6f}")
 print(f"Mean relative difference: {torch.mean(rel_diff):.6f}")
 
+# 添加 allclose 对比
+allclose_result = torch.allclose(cutlass_result, cublaslt_result, rtol=1e-5, atol=1e-8)
+strict_allclose = torch.allclose(cutlass_result, cublaslt_result, rtol=1e-6, atol=1e-9)
+
+element_wise_equal = torch.isclose(cutlass_result, cublaslt_result, rtol=1e-5, atol=1e-8)
+equal_count = torch.sum(element_wise_equal).item()
+total_count = element_wise_equal.numel()
+equal_percentage = (equal_count / total_count) * 100
+
+print(f"\nAllclose (rtol=1e-5, atol=1e-8): {allclose_result}")
+print(f"Strict allclose (rtol=1e-6, atol=1e-9): {strict_allclose}")
+print(f"Equal elements: {equal_count}/{total_count} ({equal_percentage:.2f}%)")
+
 # 检查是否有 NaN 或 Inf
 print(f"\nCUTLASS has NaN: {torch.isnan(cutlass_result).any()}")
 print(f"cuBLASLt has NaN: {torch.isnan(cublaslt_result).any()}")

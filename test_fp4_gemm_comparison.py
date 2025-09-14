@@ -156,12 +156,29 @@ def compare_results(result1: torch.Tensor, result2: torch.Tensor,
         # 检查是否在容差范围内
         within_tolerance = max_abs_diff < tolerance
         
+        # 使用 torch.allclose 进行逐元素比较
+        allclose_result = torch.allclose(result1, result2, rtol=1e-5, atol=1e-8)
+        
+        # 计算逐元素比较的统计信息
+        element_wise_equal = torch.isclose(result1, result2, rtol=1e-5, atol=1e-8)
+        equal_count = torch.sum(element_wise_equal).item()
+        total_count = element_wise_equal.numel()
+        equal_percentage = (equal_count / total_count) * 100
+        
+        # 计算更严格的 allclose 结果
+        strict_allclose = torch.allclose(result1, result2, rtol=1e-6, atol=1e-9)
+        
         return {
             'max_abs_diff': max_abs_diff,
             'max_rel_diff': max_rel_diff,
             'mean_abs_diff': mean_abs_diff,
             'mean_rel_diff': mean_rel_diff,
-            'within_tolerance': within_tolerance
+            'within_tolerance': within_tolerance,
+            'allclose': allclose_result,
+            'strict_allclose': strict_allclose,
+            'equal_elements': equal_count,
+            'total_elements': total_count,
+            'equal_percentage': equal_percentage
         }
     except Exception as e:
         return {'error': str(e)}
@@ -212,6 +229,11 @@ def test_different_sizes():
                 logger.info(f"Max abs diff: {comparison['max_abs_diff']:.20f}")
                 logger.info(f"Max rel diff: {comparison['max_rel_diff']:.20f}")
                 logger.info(f"Within tolerance: {comparison['within_tolerance']}")
+                
+                # 添加 allclose 对比信息
+                logger.info(f"Allclose (rtol=1e-5, atol=1e-8): {comparison['allclose']}")
+                logger.info(f"Strict allclose (rtol=1e-6, atol=1e-9): {comparison['strict_allclose']}")
+                logger.info(f"Equal elements: {comparison['equal_elements']}/{comparison['total_elements']} ({comparison['equal_percentage']:.2f}%)")
                 
                 # 添加详细的数值分析
                 cutlass_output = cutlass_result['results'][0]
