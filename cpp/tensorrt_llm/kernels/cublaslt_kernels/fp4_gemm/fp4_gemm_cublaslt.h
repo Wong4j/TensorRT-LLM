@@ -39,11 +39,11 @@ inline float* GetScalarZero() {
     static std::once_flag init_flag;
     std::call_once(init_flag, []() {
         float zero = 0.0f;
-        TLLM_CUDA_CHECK(cudaMemcpyToSymbol(zero_device, &zero, sizeof(float)));
+        TLLM_CUDA_CHECK(cudaMemcpyToSymbol(&zero_device, &zero, sizeof(float)));
     });
     // return address by cudaGetSymbolAddress
     float* dev_ptr;
-    TLLM_CUDA_CHECK(cudaGetSymbolAddress((void**)&dev_ptr, zero_device));
+    TLLM_CUDA_CHECK(cudaGetSymbolAddress((void**)&dev_ptr, &zero_device));
     return dev_ptr;
 }
 
@@ -55,7 +55,7 @@ public:
     
     virtual void gemm(void* D, void const* A, void const* B, 
                      void const* a_sf, void const* b_sf,
-                     int m, int n, int k, 
+                     float const* global_sf, int m, int n, int k, 
                      int batch_count, char* workspace, const size_t workspaceBytes, 
                      cudaStream_t stream) = 0;
     
@@ -86,7 +86,6 @@ private:
                             // Note: C matrix support can be added later for D = α * A * B + β * C
     
     cublasLtHandle_t mCublasLtHandle;
-    int mSm;
 };
 
 // Template class implementation
@@ -95,7 +94,6 @@ CublasLtFp4GemmRunner<T>::CublasLtFp4GemmRunner()
 {
     TLLM_LOG_DEBUG(__PRETTY_FUNCTION__);
     TLLM_CUDA_CHECK(cublasLtCreate(&mCublasLtHandle));
-    mSm = tensorrt_llm::common::getSMVersion();
 }
 
 template <typename T>
@@ -115,7 +113,11 @@ void CublasLtFp4GemmRunner<T>::gemm(void* D, void const* A, void const* B,
                                     int batch_count, char* workspace, const size_t workspaceBytes,
                                     cudaStream_t stream)
 {
-    
+    if (batch_count > 1)
+    {
+        throw std::runtime_error("[TensorRT-LLM Error][FP4] CublasLtFp4GemmRunner: batch_count > 1 is not supported yet.");
+        
+    }
     // Execute cuBLASLt GEMM
     executeCublasLtGemm(D, A, B, a_sf, b_sf, global_sf, m, n, k, workspace, workspaceBytes, stream);
     
