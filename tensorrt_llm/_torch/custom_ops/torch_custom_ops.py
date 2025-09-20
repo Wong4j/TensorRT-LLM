@@ -420,7 +420,9 @@ class FP4GemmRunner(TunableRunner):
         tactic: int = -1,
     ) -> torch.Tensor:
         mat1, mat2, mat1_scale, mat2_scale, global_scale = inputs
-        return self.fp4_gemm_runner.run_gemm(
+        
+        
+        result = self.fp4_gemm_runner.run_gemm(
             mat1,
             mat2,
             mat1_scale,
@@ -429,6 +431,8 @@ class FP4GemmRunner(TunableRunner):
             self.to_userbuffers,
             tactic,
         )
+        
+        return result
 
 
 @torch.library.custom_op("trtllm::nvfp4_gemm", mutates_args=())
@@ -440,24 +444,76 @@ def nvfp4_gemm(
     alpha: torch.Tensor,
     output_dtype: torch.dtype,
     to_userbuffers: bool = False,
+    backend: str = "cutlass",  # 新增后端选择参数
 ) -> torch.Tensor:
+    # 验证后端选择
+    if backend not in ["cutlass", "cublaslt"]:
+        raise ValueError(f"Unsupported backend: {backend}. Must be 'cutlass' or 'cublaslt'")
+    
+    if backend == "cublaslt":
+        # 直接调用 cuBLASLt 实现，使用内置 heuristic，跳过 tuner
+        # 注意：cuBLASLt 现在使用与 CUTLASS 相同的 scaling factor 类型
+        result = cublaslt_nvfp4_gemm_impl(
+            act_fp4, weight, act_sf, weight_scale, alpha, 
+            output_dtype, to_userbuffers
+        )
+        return result
+    else:
+        # 现有的 CUTLASS 实现（带 TensorRT-LLM tuner）
+        tuner = AutoTuner.get()
 
-    tuner = AutoTuner.get()
+        # allocate workspace for profiling
+        nvfp4_gemm_runner = FP4GemmRunner(fp4_utils.FP4GemmType.W4A4_NVFP4_NVFP4,
+                                          to_userbuffers, output_dtype)
 
-    # allocate workspace for profiling
-    nvfp4_gemm_runner = FP4GemmRunner(fp4_utils.FP4GemmType.W4A4_NVFP4_NVFP4,
-                                      to_userbuffers, output_dtype)
+        _, best_tactic = tuner.choose_one(
+            "trtllm::fp4_gemm::gemm",
+            [nvfp4_gemm_runner],
+            FP4GemmRunner.tuning_config,
+            [act_fp4, weight, act_sf, weight_scale, alpha],
+        )
 
-    _, best_tactic = tuner.choose_one(
-        "trtllm::fp4_gemm::gemm",
-        [nvfp4_gemm_runner],
-        FP4GemmRunner.tuning_config,
-        [act_fp4, weight, act_sf, weight_scale, alpha],
+        result = nvfp4_gemm_runner(
+            inputs=[act_fp4, weight, act_sf, weight_scale, alpha],
+            tactic=best_tactic)
+        return result
+
+
+def cublaslt_nvfp4_gemm_impl(
+    act_fp4: torch.Tensor,
+    weight: torch.Tensor,
+    act_sf: torch.Tensor,
+    weight_scale: torch.Tensor,
+    alpha: torch.Tensor,
+    output_dtype: torch.dtype,
+    to_userbuffers: bool = False,
+) -> torch.Tensor:
+    """cuBLASLt FP4 GEMM 实现，使用内置 heuristic"""
+    # 验证输入类型
+    if act_fp4.dtype != fp4_utils.FLOAT4_E2M1X2:
+        raise ValueError(f"Expected act_fp4 dtype {fp4_utils.FLOAT4_E2M1X2}, got {act_fp4.dtype}")
+    if weight.dtype != fp4_utils.FLOAT4_E2M1X2:
+        raise ValueError(f"Expected weight dtype {fp4_utils.FLOAT4_E2M1X2}, got {weight.dtype}")
+    
+    # 创建输出张量
+    # 保持与 CUTLASS 一致的输出形状 [m, n]
+    output_shape = [act_fp4.size(0), weight.size(0)]
+    
+    if to_userbuffers:
+        from ..utils import create_userbuffers_tensor
+        out = create_userbuffers_tensor(output_shape, output_dtype)[0]
+    else:
+        out = torch.empty(output_shape, dtype=output_dtype, device=act_fp4.device)
+    
+    # 调用 C++ cuBLASLt 实现（使用内置 heuristic）
+    # 交换输入顺序以匹配 cuBLASLt 的 column-major 格式：
+    # - 将 gemm(act_fp4, weight) 改为 gemm(weight, act_fp4)
+    # - 这样 cuBLASLt 的输出就是正确的 row-major 格式
+    torch.ops.trtllm.cublaslt_nvfp4_gemm(
+        out, weight, act_fp4, weight_scale, act_sf, alpha  # 交换了 act_fp4 和 weight 的位置
     )
-
-    return nvfp4_gemm_runner(
-        inputs=[act_fp4, weight, act_sf, weight_scale, alpha],
-        tactic=best_tactic)
+    
+    return out
 
 
 @nvfp4_gemm.register_fake
@@ -709,7 +765,7 @@ def _(
     output_dtype: torch.dtype,
     to_userbuffers: bool = False,
 ) -> torch.Tensor:
-    return act_fp8.new_empty((act_fp8.size(0), weight.size(0)),
+    return act_fp4.new_empty((act_fp4.size(0), weight.size(0)),
                              dtype=output_dtype)
 
 
