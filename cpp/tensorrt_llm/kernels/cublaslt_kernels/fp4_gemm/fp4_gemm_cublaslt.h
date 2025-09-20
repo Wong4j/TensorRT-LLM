@@ -31,8 +31,8 @@ namespace kernels
 namespace cublaslt_kernels
 {
 
-// Device-side constant zero value
-__device__ __constant__ float zero_device;
+// Device-side constant zero value declaration
+extern __device__ __constant__ float zero_device;
 
 // Function to get device pointer to constant zero
 inline float* GetScalarZero() {

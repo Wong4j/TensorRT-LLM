@@ -16,6 +16,9 @@
 
 #include "fp4_gemm_cublaslt.h"
 
+// Device-side constant zero value definition
+__device__ __constant__ float zero_device;
+
 namespace tensorrt_llm
 {
 namespace kernels
