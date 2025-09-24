@@ -45,6 +45,7 @@ add_library(
   convertSpecDecodingMaskToPackedMaskOp.cpp
   cutlassScaledMM.cpp
   cublasScaledMM.cpp
+  cublasFp4ScaledMM.cpp
   cudaScaledMM.cpp
   dynamicDecodeOp.cpp
   fmhaPackMaskOp.cpp
@@ -110,6 +111,10 @@ endif()
 
 if(USING_OSS_CUTLASS_MOE_GEMM)
   target_compile_definitions(th_common PUBLIC USING_OSS_CUTLASS_MOE_GEMM)
+endif()
+
+if(ENABLE_CUBLASLT_FP4_GEMM)
+  target_compile_definitions(th_common PUBLIC ENABLE_CUBLASLT_FP4_GEMM)
 endif()
 
 if(ENABLE_MULTI_DEVICE)
