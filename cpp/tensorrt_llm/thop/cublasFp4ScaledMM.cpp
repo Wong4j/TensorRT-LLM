@@ -45,9 +45,6 @@ void cublas_fp4_gemm_caller(torch::Tensor& out, torch::Tensor const& a, torch::T
     int32_t k_compressed = a.sizes()[1];
     int32_t k = k_compressed * 2;
 
-    TLLM_LOG_INFO(
-        "cublas_fp4_gemm_caller: Executing FP4 GEMM with default algorithm for shape (m=%d, n=%d, k=%d)", m, n, k);
-
     // Use device-aware thread-local CublasMMWrapper for FP4 GEMM
     at::cuda::CUDAGuard deviceGuard(a.device());
 
@@ -193,7 +190,6 @@ public:
     explicit CublasLtFP4GemmRunner(at::ScalarType outputDtype)
         : mOutputDtype(outputDtype)
     {
-        TLLM_LOG_INFO("CublasLtFP4GemmRunner: Constructed with output_dtype=%d", static_cast<int>(outputDtype));
     }
 
     // Get number of heuristic algorithms for a given matrix shape
@@ -206,9 +202,6 @@ public:
 
         auto& cache = getOrCreateAlgoCache(m, k, n, mat1.device());
         size_t num_algos = cache.heuristics.size();
-        TLLM_LOG_INFO(
-            "CublasLtFP4GemmRunner: getNumHeuristicAlgos returned %zu algorithms for shape (m=%d, k=%d, n=%d)",
-            num_algos, m, k, n);
         return static_cast<int64_t>(num_algos);
     }
 
@@ -220,10 +213,6 @@ public:
         int k_compressed = mat1.size(1);
         int k = k_compressed * 2;
         int n = mat2.size(0);
-
-        TLLM_LOG_INFO(
-            "CublasLtFP4GemmRunner::runGemm: Entry with shape (m=%d, k=%d, n=%d), tactic=%ld, to_userbuffers=%d", m, k,
-            n, tactic, to_userbuffers);
 
         // Prepare output tensor
         at::Tensor out;
@@ -253,8 +242,9 @@ public:
             // Use specified tactic
             algo_ptr = &cache.heuristics[tactic].algo;
             has_algo = true;
-            TLLM_LOG_INFO("CublasLtFP4GemmRunner: Using specified tactic %ld (out of %zu) for shape (m=%d, n=%d, k=%d)",
-                tactic, cache.heuristics.size(), m, n, k);
+            TLLM_LOG_DEBUG(
+                "CublasLtFP4GemmRunner: Using specified tactic %ld (out of %zu) for shape (m=%d, n=%d, k=%d)", tactic,
+                cache.heuristics.size(), m, n, k);
         }
         else if (tactic == -1 && !cache.heuristics.empty())
         {
@@ -263,7 +253,7 @@ public:
                 = cache.best_tactic < static_cast<int64_t>(cache.heuristics.size()) ? cache.best_tactic : 0;
             algo_ptr = &cache.heuristics[best_idx].algo;
             has_algo = true;
-            TLLM_LOG_INFO("CublasLtFP4GemmRunner: Using best tactic %ld (out of %zu) for shape (m=%d, n=%d, k=%d)",
+            TLLM_LOG_DEBUG("CublasLtFP4GemmRunner: Using best tactic %ld (out of %zu) for shape (m=%d, n=%d, k=%d)",
                 best_idx, cache.heuristics.size(), m, n, k);
         }
 
@@ -282,7 +272,6 @@ public:
             cublas_fp4_gemm_caller(out, mat1, mat2, mat1_scale, mat2_scale, alpha, beta);
         }
 
-        TLLM_LOG_INFO("CublasLtFP4GemmRunner::runGemm: Exit, output shape=(%ld, %ld)", out.size(0), out.size(1));
         return out;
     }
 
@@ -299,7 +288,7 @@ public:
         {
             int64_t old_tactic = cache.best_tactic;
             cache.best_tactic = best_tactic;
-            TLLM_LOG_INFO(
+            TLLM_LOG_DEBUG(
                 "CublasLtFP4GemmRunner: Updated best tactic from %ld to %ld for shape (m=%d, k=%d, n=%d, device=%d)",
                 old_tactic, best_tactic, m, k, n, mat1.device().index());
         }
@@ -354,7 +343,7 @@ private:
 
         if (mAlgoCache.find(key) == mAlgoCache.end())
         {
-            TLLM_LOG_INFO(
+            TLLM_LOG_DEBUG(
                 "CublasLtFP4GemmRunner: Cache miss for shape (m=%d, k=%d, n=%d, device=%d), creating new cache entry",
                 m, k, n, device.index());
 
@@ -407,16 +396,19 @@ private:
                 }
             }
 
-            cublasWrapper->destroyDescriptors();
-
-            TLLM_LOG_INFO("CublasLtFP4GemmRunner: Found %zu valid algorithms for shape (m=%d, k=%d, n=%d) on device %d",
+            TLLM_LOG_DEBUG(
+                "CublasLtFP4GemmRunner: Found %zu valid algorithms for shape (m=%d, k=%d, n=%d) on device %d",
                 cache.heuristics.size(), m, k, n, device.index());
 
             if (cache.heuristics.empty())
             {
                 TLLM_LOG_WARNING(
-                    "CublasLtFP4GemmRunner: No valid cuBLASLt algorithms found, will fall back to default");
+                    "CublasLtFP4GemmRunner: No valid cuBLASLt algorithms found for shape (m=%d, k=%d, n=%d), will fall "
+                    "back to default",
+                    m, k, n);
             }
+
+            cublasWrapper->destroyDescriptors();
 
             mAlgoCache[key] = std::move(cache);
         }
@@ -439,10 +431,6 @@ private:
         int32_t n = b.sizes()[0];
         int32_t k_compressed = a.sizes()[1];
         int32_t k = k_compressed * 2;
-
-        TLLM_LOG_INFO(
-            "cublas_fp4_gemm_caller_with_algo: Executing FP4 GEMM with selected algorithm for shape (m=%d, n=%d, k=%d)",
-            m, n, k);
 
         at::cuda::CUDAGuard deviceGuard(a.device());
 
@@ -483,7 +471,6 @@ private:
         cublasLtMatrixLayout_t Ddesc = NULL;
         cudaDataType_t outType = CUDA_R_16BF;
         check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, n, m, n));
-        TLLM_LOG_INFO("call cublasLtMatrixLayoutCreate, outType=%d, n=%d, m=%d, n=%d", outType, n, m, n);
 
         // Set scale descriptors
         // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
