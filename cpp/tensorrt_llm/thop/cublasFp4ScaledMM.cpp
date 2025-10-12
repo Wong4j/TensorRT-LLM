@@ -230,8 +230,8 @@ public:
         // Get algorithm cache
         auto& cache = getOrCreateAlgoCache(m, k, n, mat1.device());
 
-        // Create beta tensor (set to 0 for no accumulation)
-        auto beta = torch::zeros({1}, torch::TensorOptions().dtype(torch::kFloat32).device(mat1.device()));
+        // Get shared beta tensor (zero, per-device)
+        auto const& beta = getBetaTensor(mat1.device());
 
         // Select algorithm
         bool has_algo = false;
@@ -302,6 +302,20 @@ public:
     }
 
 private:
+    // Get or create a zero beta tensor for the given device
+    static at::Tensor const& getBetaTensor(c10::Device device)
+    {
+        thread_local std::unordered_map<int, at::Tensor> beta_tensors;
+        int device_id = device.index();
+
+        if (beta_tensors.find(device_id) == beta_tensors.end())
+        {
+            beta_tensors[device_id] = torch::zeros({1}, torch::TensorOptions().dtype(torch::kFloat32).device(device));
+        }
+
+        return beta_tensors[device_id];
+    }
+
     struct AlgoCache
     {
         std::vector<cublasLtMatmulHeuristicResult_t> heuristics;
