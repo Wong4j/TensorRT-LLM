@@ -477,17 +477,12 @@ private:
         cublasWrapper->setWorkspace(ws_ptr);
 
         // Create descriptors
-        // Note: Matrices are swapped (A<->B) and we use transposed operations
-        // So we pass (n, m) instead of (m, n) to match the cuBLAS coordinate system
-        int const cublas_m = n; // In cuBLAS coordinate system
-        int const cublas_n = m; // In cuBLAS coordinate system
-        int const ldc = n;      // Leading dimension
-        cublasWrapper->createDescriptors(CUBLAS_OP_T, CUBLAS_OP_N, cublas_m, cublas_n, k, k, k, ldc, 0);
+        cublasWrapper->createDescriptors(CUBLAS_OP_T, CUBLAS_OP_N, n, m, k, k, k, n, 0);
 
-        // Create D descriptor (must match C descriptor: same m, n, ldc in cuBLAS coordinate system)
+        // Create D descriptor
         cublasLtMatrixLayout_t Ddesc = NULL;
         cudaDataType_t outType = CUDA_R_16BF;
-        check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, cublas_m, cublas_n, ldc));
+        check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, m, n, n));
 
         // Set scale descriptors
         // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
