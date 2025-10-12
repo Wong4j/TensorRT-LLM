@@ -482,7 +482,7 @@ private:
         // Create D descriptor
         cublasLtMatrixLayout_t Ddesc = NULL;
         cudaDataType_t outType = CUDA_R_16BF;
-        check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, m, n, n));
+        check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, n, m, n));
 
         // Set scale descriptors
         // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
