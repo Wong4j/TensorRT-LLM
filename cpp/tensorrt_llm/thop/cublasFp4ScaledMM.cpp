@@ -483,6 +483,7 @@ private:
         cublasLtMatrixLayout_t Ddesc = NULL;
         cudaDataType_t outType = CUDA_R_16BF;
         check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, n, m, n));
+        TLLM_LOG_INFO("call cublasLtMatrixLayoutCreate, outType=%d, n=%d, m=%d, n=%d", outType, n, m, n);
 
         // Set scale descriptors
         // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
@@ -490,8 +491,9 @@ private:
         cublasWrapper->setScaleDescriptors(const_cast<void*>(b_sf_ptr), const_cast<void*>(a_sf_ptr));
 
         // Execute with specified algorithm
+        // Note: b_ptr pairs with ADesc, a_ptr pairs with BDesc (matching the createDescriptors call)
         check_cuda_error(cublasLtMatmul(cublasWrapper->getCublasLtHandle(), cublasWrapper->getOperationDesc(),
-            alpha_ptr, b_ptr, cublasWrapper->getBDesc(), a_ptr, cublasWrapper->getADesc(), beta_ptr, out_ptr,
+            alpha_ptr, b_ptr, cublasWrapper->getADesc(), a_ptr, cublasWrapper->getBDesc(), beta_ptr, out_ptr,
             cublasWrapper->getCDesc(), out_ptr, Ddesc, &algo, ws_ptr, CUBLAS_WORKSPACE_SIZE, stream));
 
         sync_check_cuda_error(stream);
