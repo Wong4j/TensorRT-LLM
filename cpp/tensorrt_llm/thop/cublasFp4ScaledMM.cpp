@@ -510,14 +510,13 @@ TORCH_LIBRARY_FRAGMENT(trtllm, m)
         .def("get_num_heuristic_algos", &torch_ext::CublasLtFP4GemmRunner::getNumHeuristicAlgos)
         .def("set_best_tactic", &torch_ext::CublasLtFP4GemmRunner::setBestTactic);
 
-    // Legacy cublas_fp4_scaled_mm op - replaced by nvfp4_gemm_cublaslt (Python custom op with autotuning)
-    // Keeping implementation for backward compatibility but not exposing as op
-    // m.def(
-    //     "cublas_fp4_scaled_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b,"
-    //     " Tensor alpha, Tensor beta, ScalarType? out_dtype=None) -> (Tensor out)");
+    // Legacy cublas_fp4_scaled_mm op - for testing and backward compatibility
+    m.def(
+        "cublas_fp4_scaled_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b,"
+        " Tensor alpha, Tensor beta, ScalarType? out_dtype=None) -> (Tensor out)");
 }
 
-// TORCH_LIBRARY_IMPL(trtllm, CUDA, m)
-// {
-//     m.impl("cublas_fp4_scaled_mm", &torch_ext::cublas_fp4_scaled_mm);
-// }
+TORCH_LIBRARY_IMPL(trtllm, CUDA, m)
+{
+    m.impl("cublas_fp4_scaled_mm", &torch_ext::cublas_fp4_scaled_mm);
+}
