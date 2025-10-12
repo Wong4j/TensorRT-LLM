@@ -490,7 +490,9 @@ private:
         check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, cublas_m, cublas_n, ldc));
 
         // Set scale descriptors
-        cublasWrapper->setScaleDescriptors(const_cast<void*>(a_sf_ptr), const_cast<void*>(b_sf_ptr));
+        // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
+        // Since we swap A<->B in the operation, we must also swap their scaling factors
+        cublasWrapper->setScaleDescriptors(const_cast<void*>(b_sf_ptr), const_cast<void*>(a_sf_ptr));
 
         // Execute with specified algorithm
         check_cuda_error(cublasLtMatmul(cublasWrapper->getCublasLtHandle(), cublasWrapper->getOperationDesc(),
