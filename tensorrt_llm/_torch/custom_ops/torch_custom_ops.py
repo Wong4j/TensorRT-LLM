@@ -8,6 +8,7 @@ import tensorrt_llm.quantization.utils.fp4_utils as fp4_utils
 import tensorrt_llm.quantization.utils.fp8_utils as fp8_utils
 from tensorrt_llm import deep_gemm
 from tensorrt_llm._utils import get_sm_version
+from tensorrt_llm.logger import logger
 
 from ..autotuner import (AutoTuner, ConstraintSpec, DynamicTensorSpec,
                          OptimizationProfile, TunableRunner, TuningConfig)
@@ -431,6 +432,154 @@ class FP4GemmRunner(TunableRunner):
         )
 
 
+class CublasLtFP4GemmRunner(TunableRunner):
+    """CublasLt-based FP4 GEMM runner with auto-tuning support.
+
+    Uses cuBLASLt's heuristic to discover and tune across multiple algorithms.
+    """
+    runner_dict = dict()
+    tuning_config = TuningConfig(dynamic_tensor_specs=(DynamicTensorSpec(
+        0, 0, get_last_power_of_2_num_tokens_buckets,
+        last_positive_power_of_2), ),
+                                 constraint_specs=(ConstraintSpec(
+                                     2, 0, fp4_scale_infer_shape), ))
+
+    def __init__(
+        self,
+        to_userbuffers: bool,
+        output_dtype: torch.dtype,
+    ):
+        self.output_dtype = output_dtype
+        self.to_userbuffers = to_userbuffers
+        instance_key = (output_dtype, )
+
+        if instance_key not in CublasLtFP4GemmRunner.runner_dict:
+            logger.info(
+                f"[CublasLtFP4GemmRunner] Creating new runner instance for dtype={output_dtype}"
+            )
+            CublasLtFP4GemmRunner.runner_dict[
+                instance_key] = torch.classes.trtllm.CublasLtFP4GemmRunner(
+                    output_dtype)
+        else:
+            logger.info(
+                f"[CublasLtFP4GemmRunner] Reusing cached runner instance for dtype={output_dtype}"
+            )
+
+        self.cublaslt_runner = CublasLtFP4GemmRunner.runner_dict[instance_key]
+
+    def get_valid_tactics(self, inputs: List[torch.Tensor],
+                          profile: OptimizationProfile, **kwargs) -> List[int]:
+        """Get all valid tactics (algorithms) from cuBLASLt heuristic."""
+        mat1, mat2, mat1_scale, mat2_scale, alpha = inputs
+        m, k_compressed, n = mat1.size(0), mat1.size(1), mat2.size(0)
+        logger.info(
+            f"[CublasLtFP4GemmRunner] Getting valid tactics for shape (m={m}, k={k_compressed*2}, n={n})"
+        )
+        num_algos = self.cublaslt_runner.get_num_heuristic_algos(mat1, mat2)
+        logger.info(
+            f"[CublasLtFP4GemmRunner] Found {num_algos} valid algorithms for shape (m={m}, k={k_compressed*2}, n={n})"
+        )
+        return list(range(num_algos))
+
+    def forward(
+        self,
+        inputs: List[torch.Tensor],
+        tactic: int = -1,
+    ) -> torch.Tensor:
+        mat1, mat2, mat1_scale, mat2_scale, alpha = inputs
+        m, k_compressed, n = mat1.size(0), mat1.size(1), mat2.size(0)
+        logger.info(
+            f"[CublasLtFP4GemmRunner] Forward: shape=(m={m}, k={k_compressed*2}, n={n}), tactic={tactic}, to_userbuffers={self.to_userbuffers}"
+        )
+        result = self.cublaslt_runner.run_gemm(
+            mat1,
+            mat2,
+            mat1_scale,
+            mat2_scale,
+            alpha,
+            self.to_userbuffers,
+            tactic,
+        )
+        logger.info(
+            f"[CublasLtFP4GemmRunner] Forward completed, output shape={result.shape}"
+        )
+        return result
+
+    def set_best_tactic(self, inputs: List[torch.Tensor], best_tactic: int):
+        """Update the best tactic after tuning."""
+        mat1, mat2 = inputs[0], inputs[1]
+        m, k_compressed, n = mat1.size(0), mat1.size(1), mat2.size(0)
+        logger.info(
+            f"[CublasLtFP4GemmRunner] Setting best tactic={best_tactic} for shape (m={m}, k={k_compressed*2}, n={n})"
+        )
+        self.cublaslt_runner.set_best_tactic(mat1, mat2, best_tactic)
+
+
+@torch.library.custom_op("trtllm::nvfp4_gemm_cublaslt", mutates_args=())
+def nvfp4_gemm_cublaslt(
+    act_fp4: torch.Tensor,
+    weight: torch.Tensor,
+    act_sf: torch.Tensor,
+    weight_scale: torch.Tensor,
+    alpha: torch.Tensor,
+    output_dtype: torch.dtype,
+    to_userbuffers: bool = False,
+) -> torch.Tensor:
+    """cuBLASLt-based NVFP4 GEMM with heuristic-based auto-tuning."""
+    m, k_compressed = act_fp4.size(0), act_fp4.size(1)
+    n = weight.size(0)
+    k = k_compressed * 2
+    logger.info(
+        f"[nvfp4_gemm_cublaslt] Entry: shape=(m={m}, k={k}, n={n}), output_dtype={output_dtype}, to_userbuffers={to_userbuffers}"
+    )
+
+    tuner = AutoTuner.get()
+    is_tuning = tuner.is_tuning_mode
+    logger.info(f"[nvfp4_gemm_cublaslt] AutoTuner mode: is_tuning={is_tuning}")
+
+    # Use CublasLt runner with heuristic-based tuning
+    nvfp4_gemm_runner = CublasLtFP4GemmRunner(to_userbuffers, output_dtype)
+
+    runner_type = type(nvfp4_gemm_runner).__name__
+    op_key = f"trtllm::fp4_gemm_cublaslt::gemm::{runner_type}"
+    logger.info(
+        f"[nvfp4_gemm_cublaslt] Calling AutoTuner.choose_one with op_key={op_key}"
+    )
+
+    _, best_tactic = tuner.choose_one(
+        op_key,
+        [nvfp4_gemm_runner],
+        nvfp4_gemm_runner.tuning_config,
+        [act_fp4, weight, act_sf, weight_scale, alpha],
+    )
+
+    logger.info(
+        f"[nvfp4_gemm_cublaslt] AutoTuner selected tactic={best_tactic}")
+
+    result = nvfp4_gemm_runner(
+        inputs=[act_fp4, weight, act_sf, weight_scale, alpha],
+        tactic=best_tactic)
+
+    logger.info(
+        f"[nvfp4_gemm_cublaslt] Exit: output_shape={result.shape}, output_dtype={result.dtype}"
+    )
+    return result
+
+
+@nvfp4_gemm_cublaslt.register_fake
+def _(
+    act_fp4: torch.Tensor,
+    weight: torch.Tensor,
+    act_sf: torch.Tensor,
+    weight_scale: torch.Tensor,
+    alpha: torch.Tensor,
+    output_dtype: torch.dtype,
+    to_userbuffers: bool = False,
+) -> torch.Tensor:
+    return act_fp4.new_empty((act_fp4.size(0), weight.size(0)),
+                             dtype=output_dtype)
+
+
 @torch.library.custom_op("trtllm::nvfp4_gemm", mutates_args=())
 def nvfp4_gemm(
     act_fp4: torch.Tensor,
@@ -441,17 +590,18 @@ def nvfp4_gemm(
     output_dtype: torch.dtype,
     to_userbuffers: bool = False,
 ) -> torch.Tensor:
-
+    """CUTLASS-based NVFP4 GEMM with auto-tuning."""
     tuner = AutoTuner.get()
 
-    # allocate workspace for profiling
+    # Use Cutlass runner with predefined configs
     nvfp4_gemm_runner = FP4GemmRunner(fp4_utils.FP4GemmType.W4A4_NVFP4_NVFP4,
                                       to_userbuffers, output_dtype)
 
+    runner_type = type(nvfp4_gemm_runner).__name__
     _, best_tactic = tuner.choose_one(
-        "trtllm::fp4_gemm::gemm",
+        f"trtllm::fp4_gemm::gemm::{runner_type}",
         [nvfp4_gemm_runner],
-        FP4GemmRunner.tuning_config,
+        nvfp4_gemm_runner.tuning_config,
         [act_fp4, weight, act_sf, weight_scale, alpha],
     )
 
@@ -472,24 +622,6 @@ def _(
 ) -> torch.Tensor:
     return act_fp4.new_empty((act_fp4.size(0), weight.size(0)),
                              dtype=output_dtype)
-
-
-# cuBLASLt FP4 GEMM - using Python fake tensor registration only
-# The actual implementation is in C++, we just provide fake tensor support
-@torch.library.register_fake("trtllm::cublas_fp4_scaled_mm")
-def _(
-    mat_a: torch.Tensor,
-    mat_b: torch.Tensor,
-    scale_a: torch.Tensor,
-    scale_b: torch.Tensor,
-    alpha: torch.Tensor,
-    beta: torch.Tensor,
-    out_dtype: torch.dtype = torch.bfloat16,
-) -> torch.Tensor:
-    """Fake tensor implementation for cuBLASLt FP4 GEMM."""
-    # Output shape: [M, N] where M = mat_a.size(0), N = mat_b.size(0)
-    output_size = [mat_a.size(0), mat_b.size(0)]
-    return mat_a.new_empty(output_size, dtype=out_dtype)
 
 
 class FP8BatchedGemmRunner(TunableRunner):
