@@ -37,6 +37,29 @@ namespace
 using tensorrt_llm::common::check;
 using tensorrt_llm::common::CublasMMWrapper;
 
+// Helper function: Convert PyTorch ScalarType to CUDA datatype for FP4 GEMM output
+inline cudaDataType_t getCudaDataType(at::ScalarType dtype)
+{
+    if (dtype == at::ScalarType::Half)
+    {
+        return CUDA_R_16F;
+    }
+    else if (dtype == at::ScalarType::BFloat16)
+    {
+        return CUDA_R_16BF;
+    }
+    else if (dtype == at::ScalarType::Float)
+    {
+        return CUDA_R_32F;
+    }
+    else
+    {
+        TLLM_CHECK_WITH_INFO(
+            false, "Unsupported output dtype for FP4 GEMM. Supported types: Float16, BFloat16, Float32");
+        return CUDA_R_16BF; // Unreachable, but satisfy compiler
+    }
+}
+
 void cublas_fp4_gemm_caller(torch::Tensor& out, torch::Tensor const& a, torch::Tensor const& b,
     torch::Tensor const& scale_a, torch::Tensor const& scale_b, torch::Tensor const& alpha, torch::Tensor const& beta)
 {
@@ -57,8 +80,9 @@ void cublas_fp4_gemm_caller(torch::Tensor& out, torch::Tensor const& a, torch::T
         cublasWrapper = std::make_shared<CublasMMWrapper>(cublasHandle, cublasLtHandle, nullptr, nullptr);
     }
 
-    // Set FP4 configuration
-    cublasWrapper->setFP4GemmConfig(CUDA_R_16BF); // Output as BF16
+    // Set FP4 configuration based on output tensor dtype
+    cudaDataType_t outType = getCudaDataType(out.scalar_type());
+    cublasWrapper->setFP4GemmConfig(outType);
 
     // Get workspace
     auto const workspace_options = torch::TensorOptions().dtype(torch::kUInt8).device(a.device());
@@ -261,7 +285,8 @@ public:
         // Execute GEMM
         if (has_algo)
         {
-            cublas_fp4_gemm_caller_with_algo(out, mat1, mat2, mat1_scale, mat2_scale, alpha, beta, *algo_ptr);
+            cublas_fp4_gemm_caller_with_algo(
+                out, mat1, mat2, mat1_scale, mat2_scale, alpha, beta, *algo_ptr, mOutputDtype);
         }
         else
         {
@@ -324,8 +349,9 @@ private:
         int64_t best_tactic = 0; // Index of the best algorithm
     };
 
-    // Cache key: (m, k, n, device_id) for algorithm list storage
-    using ShapeKey = std::tuple<int, int, int, int>;
+    // Cache key: (m, k, n, device_id, output_dtype) for algorithm list storage
+    // Different output dtypes may have different optimal algorithms
+    using ShapeKey = std::tuple<int, int, int, int, int>;
 
     struct ShapeKeyHash
     {
@@ -337,6 +363,7 @@ private:
             hash_combine(seed, std::get<1>(k));
             hash_combine(seed, std::get<2>(k));
             hash_combine(seed, std::get<3>(k));
+            hash_combine(seed, std::get<4>(k));
             return seed;
         }
 
@@ -356,13 +383,14 @@ private:
     AlgoCache& getOrCreateAlgoCache(
         int m, int k, int n, c10::Device device, at::Tensor const& mat1_scale, at::Tensor const& mat2_scale) const
     {
-        ShapeKey key = std::make_tuple(m, k, n, device.index());
+        ShapeKey key = std::make_tuple(m, k, n, device.index(), static_cast<int>(mOutputDtype));
 
         if (mAlgoCache.find(key) == mAlgoCache.end())
         {
             TLLM_LOG_DEBUG(
-                "CublasLtFP4GemmRunner: Cache miss for shape (m=%d, k=%d, n=%d, device=%d), creating new cache entry",
-                m, k, n, device.index());
+                "CublasLtFP4GemmRunner: Cache miss for shape (m=%d, k=%d, n=%d, device=%d, dtype=%d), creating new "
+                "cache entry",
+                m, k, n, device.index(), static_cast<int>(mOutputDtype));
 
             AlgoCache cache;
 
@@ -421,8 +449,9 @@ private:
         else
         {
             TLLM_LOG_DEBUG(
-                "CublasLtFP4GemmRunner: Cache hit for shape (m=%d, k=%d, n=%d, device=%d), %zu algorithms available", m,
-                k, n, device.index(), mAlgoCache[key].heuristics.size());
+                "CublasLtFP4GemmRunner: Cache hit for shape (m=%d, k=%d, n=%d, device=%d, dtype=%d), %zu algorithms "
+                "available",
+                m, k, n, device.index(), static_cast<int>(mOutputDtype), mAlgoCache[key].heuristics.size());
         }
 
         return mAlgoCache[key];
@@ -431,7 +460,7 @@ private:
     // Helper function to run GEMM with a specific algorithm
     static void cublas_fp4_gemm_caller_with_algo(torch::Tensor& out, torch::Tensor const& a, torch::Tensor const& b,
         torch::Tensor const& scale_a, torch::Tensor const& scale_b, torch::Tensor const& alpha,
-        torch::Tensor const& beta, cublasLtMatmulAlgo_t const& algo)
+        torch::Tensor const& beta, cublasLtMatmulAlgo_t const& algo, at::ScalarType output_dtype)
     {
         int32_t m = a.sizes()[0];
         int32_t n = b.sizes()[0];
@@ -449,7 +478,9 @@ private:
             cublasWrapper = std::make_shared<CublasMMWrapper>(cublasHandle, cublasLtHandle, nullptr, nullptr);
         }
 
-        cublasWrapper->setFP4GemmConfig(CUDA_R_16BF);
+        // Set FP4 configuration with correct output type
+        cudaDataType_t outType = getCudaDataType(output_dtype);
+        cublasWrapper->setFP4GemmConfig(outType);
 
         auto const workspace_options = torch::TensorOptions().dtype(torch::kUInt8).device(a.device());
         auto workspace = torch::empty(CUBLAS_WORKSPACE_SIZE, workspace_options);
@@ -473,9 +504,8 @@ private:
         // Create descriptors
         cublasWrapper->createDescriptors(CUBLAS_OP_T, CUBLAS_OP_N, n, m, k, k, k, n, 0);
 
-        // Create D descriptor
+        // Create D descriptor (use the same outType computed earlier)
         cublasLtMatrixLayout_t Ddesc = NULL;
-        cudaDataType_t outType = CUDA_R_16BF;
         check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, n, m, n));
 
         // Set scale descriptors
