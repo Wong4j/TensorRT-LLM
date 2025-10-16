@@ -37,6 +37,22 @@ namespace
 using tensorrt_llm::common::check;
 using tensorrt_llm::common::CublasMMWrapper;
 
+// Helper function: Get or create a workspace tensor for the given device
+// Workspace is reused across multiple GEMM calls to avoid repeated allocation
+inline at::Tensor const& getWorkspaceTensor(c10::Device device)
+{
+    thread_local std::unordered_map<int, at::Tensor> workspace_tensors;
+    int device_id = device.index();
+
+    if (workspace_tensors.find(device_id) == workspace_tensors.end())
+    {
+        workspace_tensors[device_id]
+            = torch::empty(CUBLAS_WORKSPACE_SIZE, torch::TensorOptions().dtype(torch::kUInt8).device(device));
+    }
+
+    return workspace_tensors[device_id];
+}
+
 // Helper function: Convert PyTorch ScalarType to CUDA datatype for FP4 GEMM output
 inline cudaDataType_t getCudaDataType(at::ScalarType dtype)
 {
@@ -84,9 +100,8 @@ void cublas_fp4_gemm_caller(torch::Tensor& out, torch::Tensor const& a, torch::T
     cudaDataType_t outType = getCudaDataType(out.scalar_type());
     cublasWrapper->setFP4GemmConfig(outType);
 
-    // Get workspace
-    auto const workspace_options = torch::TensorOptions().dtype(torch::kUInt8).device(a.device());
-    auto workspace = torch::empty(CUBLAS_WORKSPACE_SIZE, workspace_options);
+    // Get workspace (reuse cached workspace for this device)
+    auto const& workspace = getWorkspaceTensor(a.device());
 
     // Get stream
     auto stream = at::cuda::getCurrentCUDAStream(a.get_device());
@@ -122,11 +137,19 @@ void cublas_fp4_gemm_caller(torch::Tensor& out, torch::Tensor const& a, torch::T
     cublasWrapper->setWorkspace(ws_ptr);
 
     // Perform FP4 GEMM using CublasMMWrapper
-    // Note: A is column major, B is row major, so we swap A and B
-    cublasWrapper->Fp4Gemm(CUBLAS_OP_T, CUBLAS_OP_N, n, m, k, b_ptr, k, // B matrix (swapped)
-        a_ptr, k,                                                       // A matrix (swapped)
-        out_ptr, n,                                                     // Output matrix
-        b_sf_ptr, a_sf_ptr, alpha_ptr, beta_ptr);
+    // Matrix layout conversion for cuBLASLt:
+    //   PyTorch uses row-major layout: A[m, k] x B[n, k]^T = C[m, n]
+    //   cuBLASLt expects column-major layout: B^T[k, n] x A^T[k, m] = C[m, n]
+    // We achieve this conversion by:
+    //   1. Swapping A and B matrices (b_ptr comes before a_ptr)
+    //   2. Using CUBLAS_OP_T for first matrix, CUBLAS_OP_N for second
+    //   3. Passing dimensions as (n, m, k) instead of (m, n, k)
+    //   4. Swapping scaling factors to match (b_sf_ptr, a_sf_ptr)
+    cublasWrapper->Fp4Gemm(CUBLAS_OP_T, CUBLAS_OP_N, n, m, k, b_ptr, k, // B matrix (swapped to first position)
+        a_ptr, k,                                                       // A matrix (swapped to second position)
+        out_ptr, n,                                                     // Output: C[m, n] in row-major
+        b_sf_ptr, a_sf_ptr,                                             // Scaling factors (also swapped)
+        alpha_ptr, beta_ptr);
 }
 
 } // namespace
@@ -482,8 +505,8 @@ private:
         cudaDataType_t outType = getCudaDataType(output_dtype);
         cublasWrapper->setFP4GemmConfig(outType);
 
-        auto const workspace_options = torch::TensorOptions().dtype(torch::kUInt8).device(a.device());
-        auto workspace = torch::empty(CUBLAS_WORKSPACE_SIZE, workspace_options);
+        // Get workspace (reuse cached workspace for this device)
+        auto const& workspace = getWorkspaceTensor(a.device());
 
         auto stream = at::cuda::getCurrentCUDAStream(a.get_device());
 
@@ -495,26 +518,41 @@ private:
         void const* a_sf_ptr = reinterpret_cast<__nv_fp8_e4m3 const*>(scale_a.data_ptr());
         void const* b_sf_ptr = reinterpret_cast<__nv_fp8_e4m3 const*>(scale_b.data_ptr());
 
+        // Validate alpha and beta tensors before accessing data
+        TLLM_CHECK_WITH_INFO(alpha.numel() > 0, "Alpha tensor is empty");
+        TLLM_CHECK_WITH_INFO(beta.numel() > 0, "Beta tensor is empty");
+        TLLM_CHECK_WITH_INFO(alpha.dtype() == torch::kFloat32, "Alpha tensor must be float32");
+        TLLM_CHECK_WITH_INFO(beta.dtype() == torch::kFloat32, "Beta tensor must be float32");
+
         auto* alpha_ptr = alpha.data_ptr<float>();
         auto* beta_ptr = beta.data_ptr<float>();
+
+        TLLM_CHECK_WITH_INFO(alpha_ptr != nullptr, "alpha_ptr is null");
+        TLLM_CHECK_WITH_INFO(beta_ptr != nullptr, "beta_ptr is null");
 
         cublasWrapper->setStream(stream);
         cublasWrapper->setWorkspace(ws_ptr);
 
-        // Create descriptors
+        // Matrix layout conversion for cuBLASLt (same as in cublas_fp4_gemm_caller):
+        //   PyTorch uses row-major layout: A[m, k] x B[n, k]^T = C[m, n]
+        //   cuBLASLt expects column-major layout: B^T[k, n] x A^T[k, m] = C[m, n]
+        // Conversion is achieved by:
+        //   1. Creating descriptors with swapped dimensions (n, m, k)
+        //   2. Swapping matrix pointers in cublasLtMatmul call (b_ptr, a_ptr)
+        //   3. Swapping scaling factors to match matrices (b_sf_ptr, a_sf_ptr)
+
+        // Create descriptors with CUBLAS_OP_T for first matrix, CUBLAS_OP_N for second
         cublasWrapper->createDescriptors(CUBLAS_OP_T, CUBLAS_OP_N, n, m, k, k, k, n, 0);
 
-        // Create D descriptor (use the same outType computed earlier)
+        // Create D descriptor for output matrix (use the same outType computed earlier)
         cublasLtMatrixLayout_t Ddesc = NULL;
         check_cuda_error(cublasLtMatrixLayoutCreate(&Ddesc, outType, n, m, n));
 
-        // Set scale descriptors
-        // IMPORTANT: Scaling factors must be swapped to match the swapped matrices!
-        // Since we swap A<->B in the operation, we must also swap their scaling factors
+        // Set scale descriptors (swapped to match the swapped matrices)
         cublasWrapper->setScaleDescriptors(const_cast<void*>(b_sf_ptr), const_cast<void*>(a_sf_ptr));
 
         // Execute with specified algorithm
-        // Note: b_ptr pairs with ADesc, a_ptr pairs with BDesc (matching the createDescriptors call)
+        // b_ptr pairs with ADesc, a_ptr pairs with BDesc (matching the createDescriptors call)
         check_cuda_error(cublasLtMatmul(cublasWrapper->getCublasLtHandle(), cublasWrapper->getOperationDesc(),
             alpha_ptr, b_ptr, cublasWrapper->getADesc(), a_ptr, cublasWrapper->getBDesc(), beta_ptr, out_ptr,
             cublasWrapper->getCDesc(), out_ptr, Ddesc, &algo, ws_ptr, CUBLAS_WORKSPACE_SIZE, stream));
