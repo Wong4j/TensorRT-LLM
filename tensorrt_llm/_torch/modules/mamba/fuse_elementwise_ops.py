@@ -196,3 +196,60 @@ def fused_split_rearrange_after_conv1d(
         B_flat.view(1, num_prefill_tokens, n_groups, d_state),
         C_flat.view(1, num_prefill_tokens, n_groups, d_state),
     )
+
+
+@triton.jit
+def _transpose_copy_back_kernel(
+    src_ptr,
+    dst_ptr,
+    num_tokens,
+    num_cols,
+    BLOCK_SEQ: tl.constexpr,
+    BLOCK_DIM: tl.constexpr,
+):
+    """Transpose src[num_cols, num_tokens] and write into dst[num_tokens, num_cols]."""
+    pid_seq = tl.program_id(0)
+    pid_dim = tl.program_id(1)
+
+    seq_offsets = pid_seq * BLOCK_SEQ + tl.arange(0, BLOCK_SEQ)
+    dim_offsets = pid_dim * BLOCK_DIM + tl.arange(0, BLOCK_DIM)
+
+    seq_mask = seq_offsets < num_tokens
+    dim_mask = dim_offsets < num_cols
+
+    # Read from src[num_cols, num_tokens] with coalesced reads along num_tokens
+    src_indices = dim_offsets[:, None] * num_tokens + seq_offsets[None, :]
+    data = tl.load(src_ptr + src_indices,
+                   mask=dim_mask[:, None] & seq_mask[None, :],
+                   other=0.0)
+
+    # Write to dst[num_tokens, num_cols] with coalesced writes along num_cols
+    dst_indices = seq_offsets[:, None].to(tl.int64) * num_cols + dim_offsets[None, :]
+    tl.store(dst_ptr + dst_indices, tl.trans(data),
+             mask=seq_mask[:, None] & dim_mask[None, :])
+
+
+def transpose_copy_back(
+    src: torch.Tensor,
+    dst: torch.Tensor,
+) -> None:
+    """
+    Transpose src[D, T] and write into dst[T, D] in-place.
+
+    Uses tiled access for coalesced memory patterns, more efficient
+    than dst.copy_(src.transpose(0, 1)) for large matrices.
+    """
+    num_cols, num_tokens = src.shape
+    assert dst.shape == (num_tokens, num_cols)
+
+    BLOCK_SEQ, BLOCK_DIM = 32, 128
+    grid = (triton.cdiv(num_tokens, BLOCK_SEQ), triton.cdiv(num_cols, BLOCK_DIM))
+
+    _transpose_copy_back_kernel[grid](
+        src,
+        dst,
+        num_tokens,
+        num_cols,
+        BLOCK_SEQ,
+        BLOCK_DIM,
+    )

@@ -36,7 +36,7 @@ from tensorrt_llm._torch.modules.fla.chunk import chunk_gated_delta_rule
 from tensorrt_llm._torch.modules.fla.fused_sigmoid_gating_recurrent import \
     fused_sigmoid_gating_delta_rule_update
 from tensorrt_llm._torch.modules.mamba.fuse_elementwise_ops import \
-    extract_transpose_prefill_slice
+    extract_transpose_prefill_slice, transpose_copy_back
 from tensorrt_llm._torch.modules.mamba.mamba2_metadata import Mamba2Metadata
 from tensorrt_llm._torch.pyexecutor.config_utils import \
     get_qwen3_hybrid_layer_types
@@ -397,6 +397,42 @@ def fused_gdn_gating_kernel(
     tl.store(g + off, blk_g.to(g.dtype.element_ty), mask=mask)
 
 
+@triton.jit
+def fused_gdn_gating_with_sigmoid_kernel(
+    g,
+    beta_out,
+    A_log,
+    a,
+    dt_bias,
+    b,
+    seq_len,
+    NUM_HEADS: tl.constexpr,
+    sp_beta: tl.constexpr,
+    threshold: tl.constexpr,
+    BLK_HEADS: tl.constexpr,
+):
+    i_b, i_s, i_d = tl.program_id(0), tl.program_id(1), tl.program_id(2)
+    head_off = i_d * BLK_HEADS + tl.arange(0, BLK_HEADS)
+    off = i_b * seq_len * NUM_HEADS + i_s * NUM_HEADS + head_off
+    mask = head_off < NUM_HEADS
+
+    # gating: g = -exp(A_log) * softplus(a + dt_bias)
+    blk_A_log = tl.load(A_log + head_off, mask=mask)
+    blk_a = tl.load(a + off, mask=mask)
+    blk_bias = tl.load(dt_bias + head_off, mask=mask)
+    x = blk_a.to(tl.float32) + blk_bias.to(tl.float32)
+    softplus_x = tl.where(sp_beta * x <= threshold,
+                          (1 / sp_beta) * tl.log(1 + tl.exp(sp_beta * x)), x)
+    blk_g = -tl.exp(blk_A_log.to(tl.float32)) * softplus_x
+    tl.store(g + off, blk_g.to(g.dtype.element_ty), mask=mask)
+
+    # sigmoid(b)
+    blk_b = tl.load(b + off, mask=mask)
+    blk_sigmoid = tl.sigmoid(blk_b.to(tl.float32))
+    tl.store(beta_out + off, blk_sigmoid.to(beta_out.dtype.element_ty),
+             mask=mask)
+
+
 def fused_gdn_gating(
     A_log: torch.Tensor,
     a: torch.Tensor,
@@ -419,6 +455,34 @@ def fused_gdn_gating(
                                   8,
                                   num_warps=1)
     return g
+
+
+def fused_gdn_gating_with_sigmoid(
+    A_log: torch.Tensor,
+    a: torch.Tensor,
+    dt_bias: torch.Tensor,
+    b: torch.Tensor,
+    sp_beta: float = 1.0,
+    threshold: float = 20.0,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    batch, num_heads = a.shape
+    seq_len = 1
+    grid = (batch, seq_len, triton.cdiv(num_heads, 8))
+    g = torch.empty_like(a, dtype=torch.float32)
+    beta_out = torch.empty_like(b)
+    fused_gdn_gating_with_sigmoid_kernel[grid](g,
+                                               beta_out,
+                                               A_log,
+                                               a,
+                                               dt_bias,
+                                               b,
+                                               seq_len,
+                                               num_heads,
+                                               sp_beta,
+                                               threshold,
+                                               8,
+                                               num_warps=1)
+    return g, beta_out
 
 
 class Qwen3NextGatedDeltaNet(nn.Module):
@@ -707,7 +771,7 @@ class Qwen3NextGatedDeltaNet(nn.Module):
                 activation=self.activation,
                 conv_state_indices=state_indices_d,
             )
-            mixed_qkv_p.copy_(mixed_qkv_p_t.transpose(0, 1))
+            transpose_copy_back(mixed_qkv_p_t, mixed_qkv_p)
         else:
             mixed_qkv_t = extract_transpose_prefill_slice(
                 mixed_qkv,
@@ -742,8 +806,8 @@ class Qwen3NextGatedDeltaNet(nn.Module):
         key = key.view(1, actual_seq_len, num_heads, self.head_k_dim)
         value = value.view(1, actual_seq_len, num_value_heads, self.head_v_dim)
 
-        beta = b.sigmoid()
-        g = fused_gdn_gating(self.A_log, a, self.dt_bias)
+        g, beta = fused_gdn_gating_with_sigmoid(self.A_log, a, self.dt_bias,
+                                                        b)
 
         g = g.unsqueeze(0)
         beta = beta.unsqueeze(0)
@@ -806,9 +870,7 @@ class Qwen3NextGatedDeltaNet(nn.Module):
         ssm_states = attn_metadata.kv_cache_manager.get_ssm_states(
             self.layer_idx)
         if num_prefills > 0:
-            ssm_states[state_indices_p] = torch.zeros((),
-                                                      dtype=ssm_states.dtype,
-                                                      device=ssm_states.device)
+            ssm_states[state_indices_p].zero_()
 
         def _compute_projected_states_qkvz():
             return self.in_proj_qkvz(hidden_states)
@@ -863,13 +925,9 @@ class Qwen3NextGatedDeltaNet(nn.Module):
         else:
             attn_out = self.forward_decode(conv_states, ssm_states, **kwargs)
 
-        z_shape_og = z.shape
-        # reshape input data into 2D tensor
-        attn_out = attn_out.reshape(-1, attn_out.shape[-1])
-        z = z.reshape(-1, z.shape[-1])
+        attn_out = attn_out.squeeze(0)
         attn_out = self.norm(attn_out, z)
-        attn_out = attn_out.reshape(z_shape_og)
-        attn_out = attn_out.reshape(*attn_out.shape[:-2], -1)
+        attn_out = attn_out.reshape(attn_out.shape[0], -1)
         output = self.out_proj(attn_out, all_reduce_params=all_reduce_params)
         return output
 
