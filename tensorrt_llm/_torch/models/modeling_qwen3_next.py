@@ -36,7 +36,8 @@ from tensorrt_llm._torch.modules.fla.chunk import chunk_gated_delta_rule
 from tensorrt_llm._torch.modules.fla.fused_sigmoid_gating_recurrent import \
     fused_sigmoid_gating_delta_rule_update
 from tensorrt_llm._torch.modules.mamba.fuse_elementwise_ops import \
-    extract_transpose_prefill_slice, split_qkv_contiguous, transpose_copy_back
+    extract_transpose_prefill_slice, split_qkv_contiguous, \
+    transpose_and_split_qkv, transpose_copy_back
 from tensorrt_llm._torch.modules.mamba.mamba2_metadata import Mamba2Metadata
 from tensorrt_llm._torch.pyexecutor.config_utils import \
     get_qwen3_hybrid_layer_types
@@ -771,7 +772,20 @@ class Qwen3NextGatedDeltaNet(nn.Module):
                 activation=self.activation,
                 conv_state_indices=state_indices_d,
             )
-            transpose_copy_back(mixed_qkv_p_t, mixed_qkv_p)
+            key_split_dim = self.key_dim // self.attn_tp_size
+            value_split_dim = self.value_dim // self.attn_tp_size
+            num_heads = key_split_dim // self.head_k_dim
+            num_value_heads = value_split_dim // self.head_v_dim
+            query, key, value = transpose_and_split_qkv(
+                mixed_qkv_p_t, mixed_qkv_d,
+                q_dim=key_split_dim,
+                k_dim=key_split_dim,
+                v_dim=value_split_dim,
+                num_q_heads=num_heads,
+                head_k_dim=self.head_k_dim,
+                num_v_heads=num_value_heads,
+                head_v_dim=self.head_v_dim,
+            )
         else:
             mixed_qkv_t = extract_transpose_prefill_slice(
                 mixed_qkv,
@@ -789,21 +803,20 @@ class Qwen3NextGatedDeltaNet(nn.Module):
                 cache_indices=cache_indices,
                 query_start_loc=query_start_loc).transpose(0, 1)
 
-        key_split_dim = self.key_dim // self.attn_tp_size
-        value_split_dim = self.value_dim // self.attn_tp_size
-        num_heads = key_split_dim // self.head_k_dim
-        num_value_heads = value_split_dim // self.head_v_dim
-
-        query, key, value = split_qkv_contiguous(
-            mixed_qkv,
-            q_dim=key_split_dim,
-            k_dim=key_split_dim,
-            v_dim=value_split_dim,
-            num_q_heads=num_heads,
-            head_k_dim=self.head_k_dim,
-            num_v_heads=num_value_heads,
-            head_v_dim=self.head_v_dim,
-        )
+            key_split_dim = self.key_dim // self.attn_tp_size
+            value_split_dim = self.value_dim // self.attn_tp_size
+            num_heads = key_split_dim // self.head_k_dim
+            num_value_heads = value_split_dim // self.head_v_dim
+            query, key, value = split_qkv_contiguous(
+                mixed_qkv,
+                q_dim=key_split_dim,
+                k_dim=key_split_dim,
+                v_dim=value_split_dim,
+                num_q_heads=num_heads,
+                head_k_dim=self.head_k_dim,
+                num_v_heads=num_value_heads,
+                head_v_dim=self.head_v_dim,
+            )
 
         g, beta = fused_gdn_gating_with_sigmoid(self.A_log, a, self.dt_bias,
                                                         b)
