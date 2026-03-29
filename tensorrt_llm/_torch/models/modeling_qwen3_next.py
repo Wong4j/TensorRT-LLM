@@ -36,7 +36,7 @@ from tensorrt_llm._torch.modules.fla.chunk import chunk_gated_delta_rule
 from tensorrt_llm._torch.modules.fla.fused_sigmoid_gating_recurrent import \
     fused_sigmoid_gating_delta_rule_update
 from tensorrt_llm._torch.modules.mamba.fuse_elementwise_ops import \
-    extract_transpose_prefill_slice, transpose_copy_back
+    extract_transpose_prefill_slice, split_qkv_contiguous, transpose_copy_back
 from tensorrt_llm._torch.modules.mamba.mamba2_metadata import Mamba2Metadata
 from tensorrt_llm._torch.pyexecutor.config_utils import \
     get_qwen3_hybrid_layer_types
@@ -791,20 +791,19 @@ class Qwen3NextGatedDeltaNet(nn.Module):
 
         key_split_dim = self.key_dim // self.attn_tp_size
         value_split_dim = self.value_dim // self.attn_tp_size
+        num_heads = key_split_dim // self.head_k_dim
+        num_value_heads = value_split_dim // self.head_v_dim
 
-        query, key, value = torch.split(
+        query, key, value = split_qkv_contiguous(
             mixed_qkv,
-            [key_split_dim, key_split_dim, value_split_dim],
-            dim=-1,
+            q_dim=key_split_dim,
+            k_dim=key_split_dim,
+            v_dim=value_split_dim,
+            num_q_heads=num_heads,
+            head_k_dim=self.head_k_dim,
+            num_v_heads=num_value_heads,
+            head_v_dim=self.head_v_dim,
         )
-
-        actual_seq_len = query.shape[0]
-        num_heads = query.shape[1] // self.head_k_dim
-        num_value_heads = value.shape[1] // self.head_v_dim
-
-        query = query.view(1, actual_seq_len, num_heads, self.head_k_dim)
-        key = key.view(1, actual_seq_len, num_heads, self.head_k_dim)
-        value = value.view(1, actual_seq_len, num_value_heads, self.head_v_dim)
 
         g, beta = fused_gdn_gating_with_sigmoid(self.A_log, a, self.dt_bias,
                                                         b)
