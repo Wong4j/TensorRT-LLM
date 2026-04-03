@@ -32,9 +32,9 @@ class Qwen3_5MoeHfWeightMapper(Qwen3NextHfWeightMapper):
        tensors.  Qwen3.5 checkpoints store them as separate in_proj_qkv + z
        (or fully split q/k/v/z) and b + a tensors.  This mapper packs them
        into the grouped-interleaved layout that TRT-LLM expects.
-       For FP8 checkpoints, the packed qkvz tensor is then dequantized to
-       bf16 as a temporary workaround for TP loading
-       (handled in _dequantize_linear_attn_fp8_qkvz).
+       For FP8 checkpoints, all split projections are dequantized to bf16
+       before packing (handled in _dequantize_linear_attn_fp8) because
+       FP8 block-scale tensors cannot be group-interleaved correctly.
 
     3. MoE expert tensors (handled in handle_special_instance_module):
        Qwen3.5 BF16 checkpoints store fused gate_up_proj/down_proj per expert
@@ -153,10 +153,18 @@ class Qwen3_5MoeHfWeightMapper(Qwen3NextHfWeightMapper):
             target_dtype = torch.bfloat16
         return (weight.to(torch.float32) * expanded_scales).to(target_dtype).contiguous()
 
-    def _dequantize_linear_attn_fp8_qkvz(self, weights: dict) -> dict:
+    def _dequantize_linear_attn_fp8(self, weights: dict) -> dict:
+        """Dequantize FP8 linear-attention projections that need packing.
+
+        Split projections (q, k, v, z, qkv, b, a) and packed qkvz/ba tensors
+        must be BF16 before packing / TP slicing.  Dequantize any that are FP8.
+        """
         updated_weights = dict(weights)
+        dequant_count = 0
         for name in list(weights):
-            if not name.endswith(".linear_attn.in_proj_qkvz.weight"):
+            if ".linear_attn.in_proj_" not in name or not name.endswith(".weight"):
+                continue
+            if weights[name].dtype != torch.float8_e4m3fn:
                 continue
             scale_name = name.replace(".weight", ".weight_scale_inv")
             if scale_name not in weights:
@@ -165,6 +173,7 @@ class Qwen3_5MoeHfWeightMapper(Qwen3NextHfWeightMapper):
                 weights[name], weights[scale_name]
             )
             updated_weights.pop(scale_name, None)
+            dequant_count += 1
         return updated_weights
 
     def _pack_split_projections(self, weights: dict) -> dict:
@@ -265,6 +274,6 @@ class Qwen3_5MoeHfWeightMapper(Qwen3NextHfWeightMapper):
 
     def preprocess_weights(self, weights: dict) -> dict:
         normalized_weights = self._normalize_weight_names(weights)
-        packed_weights = self._pack_split_projections(normalized_weights)
-        packed_weights = self._dequantize_linear_attn_fp8_qkvz(packed_weights)
+        dequantized_weights = self._dequantize_linear_attn_fp8(normalized_weights)
+        packed_weights = self._pack_split_projections(dequantized_weights)
         return super().preprocess_weights(packed_weights)
