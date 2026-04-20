@@ -882,7 +882,9 @@ class Qwen3NextGatedDeltaNet(nn.Module):
         ssm_states = attn_metadata.kv_cache_manager.get_ssm_states(
             self.layer_idx)
         if num_prefills > 0:
-            ssm_states[state_indices_p].zero_()
+            # Advanced indexing returns a temporary tensor, so zero_() would not
+            # clear the backing cache entries for new prefills.
+            ssm_states.index_fill_(0, state_indices_p.to(torch.int64), 0)
 
         def _compute_projected_states_qkvz():
             return self.in_proj_qkvz(hidden_states)
